@@ -8,7 +8,7 @@
   import QR from 'svelte-kjua'
 
   import {CONTRACT, NAME} from './constants'
-  import * as toast from './toast'
+  import * as toast from '../../helpers/toast'
 
   const etleneumAccount = Account()
   const account = readable(etleneumAccount, set =>

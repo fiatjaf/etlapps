@@ -1,0 +1,67 @@
+<!-- @format -->
+
+<script>
+  import Router from 'svelte-spa-router'
+  import {onMount} from 'svelte'
+  import {Account} from 'etleneum-client'
+  import Auth from '../../components/Auth.html'
+
+  import {NAME, CONTRACT} from './constants'
+  import {account} from './stores'
+  import Index from './Index.html'
+  import Answerer from './Answerer.html'
+  import Asker from './Asker.html'
+
+  const routes = {
+    '/': Index,
+    '/a/:username': Answerer,
+    '/q/:etlaccount': Asker
+  }
+</script>
+
+<style>
+  h1 {
+    font-family: sans-serif;
+    color: var(--emphasis-rare);
+  }
+  main {
+    margin: 43px auto;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer {
+    margin-top: 18px;
+    font-size: 0.9rem;
+    background-color: var(--background-secondary);
+    color: var(--color-secondary);
+    width: 100vw;
+    padding: 20px 50px;
+  }
+</style>
+
+<div class="center">
+  <header>
+    <div>
+      <h1><a href="#/">{NAME}</a></h1>
+      <p>
+        {#if $account.id}
+        <a href="#/q/{$account.id}">Browse your questions.</a>
+        {:else} Offer bounties to finally get answers from people you want to
+        know something from. Login to start. {/if}
+      </p>
+    </div>
+    <Auth qrsize="{200}" account="{account}" />
+  </header>
+  <main><Router {routes} /></main>
+  <footer>
+    <b>{NAME}</b> is an
+    <a href="https://etleneum.com/#/contract/{CONTRACT}" target="_blank"
+      >Etleneum</a
+    >
+    contract. All its core functionalities are defined there within visible and
+    immutable code you should read before calling methods here.
+  </footer>
+</div>

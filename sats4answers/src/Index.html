@@ -1,0 +1,107 @@
+<!-- @format -->
+
+<script>
+  import QR from 'svelte-kjua'
+
+  import {CONTRACT, NAME} from './constants'
+  import * as toast from '../../helpers/toast'
+  import {account, s4a} from './stores'
+  import Question from './Question.html'
+
+  var target
+  var question
+  var sats = 100 + parseInt(Math.random() * 1000)
+  var call
+
+  s4a.stream(() => (call = null), () => (call = null))
+
+  async function prepareQuestion(e) {
+    e.preventDefault()
+    try {
+      call = await s4a.prepareCall(
+        'ask',
+        sats * 1000,
+        {question: question, answerer_keybase: target},
+        $account.session
+      )
+    } catch (err) {
+      toast.error(`Failed to ask: ${err}`)
+    }
+  }
+</script>
+
+<div>
+  {#if $account.id && !call}
+  <div id="ask">
+    <form on:submit="{prepareQuestion}">
+      <label>Asking to: <input bind:value="{target}"/></label>
+      <label
+        >Paying:
+        <input type="number" min="100" bind:value="{sats}" />
+        satoshi</label
+      >
+      <label>Question: <textarea bind:value="{question}"/></label>
+      <button>Ask</button>
+    </form>
+  </div>
+  {:else if call}
+  <div id="ask">
+    <QR value="{call.invoice}" />
+    <div class="wrap">{call.invoice}</div>
+    <p>Pay to make the question</p>
+  </div>
+  {/if}
+
+  <div id="questions-columns">
+    {#if $s4a.lastUnanswered.length > 0}
+    <section>
+      <h2>Last unanswered questions</h2>
+      {#each $s4a.lastUnanswered as id (id)}
+      <Question question="{$s4a.byId[id]}" />
+      {/each}
+    </section>
+    {/if} {#if $s4a.lastAnswers.length > 0}
+    <section>
+      <h2>Last answers</h2>
+      {#each $s4a.lastAnswers as id (id)}
+      <Question question="{$s4a.byId[id]}" />
+      {/each}
+    </section>
+    {/if}
+  </div>
+</div>
+
+<style>
+  b {
+    font-size: 1.1rem;
+    color: var(--emphasis);
+  }
+  #prepare-ask {
+    text-align: center;
+  }
+  #ask {
+    padding: 18px;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  #ask label,
+  #ask button {
+    display: block;
+    margin: 10px;
+  }
+  #questions-columns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  section {
+    width: 48%;
+    min-width: 450px;
+  }
+  section h2 {
+    color: var(--emphasis-rare);
+  }
+  section p {
+    margin-top: 2px;
+  }
+</style>

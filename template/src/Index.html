@@ -1,6 +1,31 @@
 <!-- @format -->
 
-<script></script>
+<script>
+  import {onMount} from 'svelte'
+  import {Contract, Account} from 'etleneum-client'
+  import {readable} from 'svelte/store'
+  import QR from 'svelte-kjua'
+
+  import {CONTRACT, NAME} from './constants'
+  import * as toast from './toast'
+
+  const etleneumAccount = Account()
+  const account = readable(etleneumAccount, set =>
+    etleneumAccount.subscribe(set)
+  )
+
+  const contract = Contract(CONTRACT)
+
+  onMount(loadContract)
+
+  async function loadContract() {
+    try {
+      let state = await contract.state()
+    } catch (err) {
+      toast.error(`Failed to get contract: ${err}`)
+    }
+  }
+</script>
 
 <style>
   b {
@@ -13,7 +38,8 @@
 </style>
 
 <div class="center">
-  <p>
-    <b></b>
-  </p>
+  <div>
+    <h1>{NAME}</h1>
+    <p></p>
+  </div>
 </div>

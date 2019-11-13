@@ -1,0 +1,84 @@
+<!-- @format -->
+
+<script>
+  import {readable} from 'svelte/store'
+  import * as toast from '../helpers/toast'
+  import QR from 'svelte-kjua'
+
+  const SEEDAUTH = window.SEEDAUTH || 'https://seed-auth.etleneum.com'
+
+  export let account
+  export let qrsize = 300
+
+  const etleneumAccount = account
+  account = readable(etleneumAccount, set => etleneumAccount.subscribe(set))
+
+  var awaitingSeedAuth = false
+  var popupBlocked = false
+
+  async function handleSeedAuth(e) {
+    if (popupBlocked) {
+      return
+    } else {
+      e.preventDefault()
+    }
+
+    awaitingSeedAuth = true
+    try {
+      await PromiseWindow.open(`${SEEDAUTH}/#/lnurl/${$account.lnurl.auth}`, {
+        windowName: 'Login to etleneum.com',
+        height: 500,
+        width: 400
+      })
+    } catch (err) {
+      if (err !== 'closed') {
+        if (err === 'blocked') {
+          popupBlocked = true
+        }
+        toast.warning(`${err}`)
+        console.log(err)
+      }
+    }
+    awaitingSeedAuth = false
+  }
+</script>
+
+<style>
+  .qr {
+    text-align: center;
+  }
+  p {
+    text-align: center;
+  }
+</style>
+
+<div>
+  {#if !$account.id}
+  <p>
+    Login to Etleneum using an
+    <a href="https://github.com/fiatjaf/awesome-lnurl" target="_blank"
+      >lnurl-auth</a
+    >-powered wallet:
+  </p>
+  <a class="qr" href="lightning:{$account.lnurl.auth}"
+    >{#if $account.lnurl.auth}<QR
+      value="{$account.lnurl.auth}"
+      size="{qrsize}"
+    />{/if}</a
+  >
+  <p>
+    or using
+    <a
+      href="https://seed-auth.etleneum.com/#/lnurl/{$account.lnurl.auth}"
+      on:click="{handleSeedAuth}"
+      target="_blank"
+      >login and password</a
+    >.
+  </p>
+  {:else}
+  <p>
+    Logged as <em>{$account.id}</em> on
+    <a href="https://etleneum.com/" target="_blank">etleneum.com</a>
+  </p>
+  {/if}
+</div>

@@ -4,3 +4,6 @@
 node_modules
 static/*bundle*
 .netlify
+*.debug
+*.log
+*bundle*

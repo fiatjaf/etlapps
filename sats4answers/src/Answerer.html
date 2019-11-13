@@ -1,0 +1,17 @@
+<!-- @format -->
+
+<script>
+  import * as toast from '../../helpers/toast'
+  import {account, s4a} from './stores'
+  import Question from './Question.html'
+
+  export let params
+</script>
+
+<h2>{params.username}</h2>
+
+<div>
+  {#each $s4a.byTarget[params.username] as id (id)}
+  <Question question="{$s4a.byId[id]}" />
+  {/each}
+</div>
