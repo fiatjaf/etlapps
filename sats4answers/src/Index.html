@@ -13,7 +13,21 @@
   var sats = 100 + parseInt(Math.random() * 1000)
   var call
 
-  s4a.stream(() => (call = null), () => (call = null))
+  s4a.stream(
+    id => {
+      if (call && id === call.id) {
+        toast.success('Success!')
+        call = null
+        question = ''
+      }
+    },
+    (id, err) => {
+      if (call && id === call.id) {
+        toast.warning(`Error: ${err}`)
+        call = null
+      }
+    }
+  )
 
   async function prepareQuestion(e) {
     e.preventDefault()
@@ -46,7 +60,7 @@
   </div>
   {:else if call}
   <div id="ask">
-    <QR value="{call.invoice}" />
+    <a href="lightning:{call.invoice}"><QR value="{call.invoice}"/></a>
     <div class="wrap">{call.invoice}</div>
     <p>Pay to make the question</p>
   </div>
@@ -85,8 +99,10 @@
   }
   #ask label,
   #ask button {
-    display: block;
     margin: 10px;
+    display: grid;
+    grid-template-columns: 120px auto 100px;
+    align-items: center;
   }
   #questions-columns {
     display: flex;
@@ -95,6 +111,7 @@
     align-items: flex-start;
   }
   section {
+    margin: 23px 0;
     width: 48%;
     min-width: 450px;
   }

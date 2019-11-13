@@ -41,16 +41,12 @@
     }
     awaitingSeedAuth = false
   }
-</script>
 
-<style>
-  .qr {
-    text-align: center;
+  function logout(e) {
+    e.preventDefault()
+    etleneumAccount.reset()
   }
-  p {
-    text-align: center;
-  }
-</style>
+</script>
 
 <div>
   {#if !$account.id}
@@ -78,7 +74,19 @@
   {:else}
   <p>
     Logged as <em>{$account.id}</em> on
-    <a href="https://etleneum.com/" target="_blank">etleneum.com</a>
+    <a href="https://etleneum.com/" target="_blank">etleneum.com</a>.
+    <a href="https://etleneum.com/" class="logout" on:click="{logout}">Logout</a
+    >.
   </p>
   {/if}
 </div>
+
+<style>
+  .qr {
+    text-align: center;
+  }
+  p {
+    text-align: center;
+    word-wrap: break-word;
+  }
+</style>

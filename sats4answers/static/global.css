@@ -63,3 +63,8 @@ input {
 .toast-warning { background: #cfdb6e !important; }
 .toast-error { background: #db6e6e!important; }
 .toast-success { background: #6edb91!important; }
+
+img[src$='keybase.png'] {
+  margin: 2px 0 0 2px;
+  height: 1em;
+}

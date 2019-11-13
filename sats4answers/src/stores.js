@@ -21,11 +21,12 @@ export const s4a = readable(
   set => {
     let reload = loads4a.bind(null, set)
     reload()
-    s4aContract.stream(reload)
+    return s4aContract.stream(reload)
   }
 )
 
 s4a.prepareCall = s4aContract.prepareCall
+s4a.stream = s4aContract.stream
 
 async function loads4a(set) {
   try {
@@ -43,7 +44,7 @@ async function loads4a(set) {
           )
         }))
       )
-    ).sort((qa, qb) => qa.asked - qb.asked)
+    ).sort((qa, qb) => qb.asked - qa.asked)
 
     var byTarget = {}
     var byAsker = {}
@@ -53,6 +54,7 @@ async function loads4a(set) {
       let q = flat[i]
       byId[q.id] = q
       byTarget[q.target] = byTarget[q.target] || []
+      byTarget[q.target].push(q.id)
       for (let asker in q.funds) {
         byAsker[asker] = byAsker[asker] || []
         byAsker[asker].push(q.id)
@@ -63,7 +65,7 @@ async function loads4a(set) {
       lastUnanswered: flat.filter(q => !q.answer).map(q => q.id),
       lastAnswers: flat
         .filter(q => q.answer)
-        .sort((qa, qb) => qa.answered - qb.answered)
+        .sort((qa, qb) => qb.answered - qa.answered)
         .map(q => q.id),
       byAsker,
       byTarget,
@@ -85,7 +87,7 @@ export const kad = readable(
   async set => {
     let reload = loadkad.bind(null, set)
     reload()
-    kadContract.stream(reload)
+    return kadContract.stream(reload)
   }
 )
 

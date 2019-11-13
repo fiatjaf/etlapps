@@ -7,7 +7,7 @@
   import Auth from '../../components/Auth.html'
 
   import {NAME, CONTRACT} from './constants'
-  import {account} from './stores'
+  import {account, kad, s4a} from './stores'
   import Index from './Index.html'
   import Answerer from './Answerer.html'
   import Asker from './Asker.html'
@@ -19,38 +19,20 @@
   }
 </script>
 
-<style>
-  h1 {
-    font-family: sans-serif;
-    color: var(--emphasis-rare);
-  }
-  main {
-    margin: 43px auto;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  footer {
-    margin-top: 18px;
-    font-size: 0.9rem;
-    background-color: var(--background-secondary);
-    color: var(--color-secondary);
-    width: 100vw;
-    padding: 20px 50px;
-  }
-</style>
-
 <div class="center">
   <header>
     <div>
       <h1><a href="#/">{NAME}</a></h1>
       <p>
-        {#if $account.id}
-        <a href="#/q/{$account.id}">Browse your questions.</a>
-        {:else} Offer bounties to finally get answers from people you want to
-        know something from. Login to start. {/if}
+        {#if $account.id} {#if $s4a.byAsker[$account.id].length}
+        <a href="#/q/{$account.id}">Questions you've asked.</a>
+        {/if} {#if $account.id in $kad.kbFromId &&
+        $s4a.byTarget[$kad.kbFromId[$account.id]].length}
+        <a href="#/a/{$kad.kbFromId[$account.id]}"
+          >Questions you've been asked.</a
+        >
+        {/if} {:else} Offer bounties to finally get answers from people you want
+        to know something from. Login to start. {/if}
       </p>
     </div>
     <Auth qrsize="{200}" account="{account}" />
@@ -65,3 +47,33 @@
     immutable code you should read before calling methods here.
   </footer>
 </div>
+
+<style>
+  h1 {
+    font-family: sans-serif;
+    color: var(--emphasis-rare);
+    margin-right: 20px;
+  }
+  h1 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  main {
+    margin: 43px auto;
+    min-height: 80vh;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer {
+    margin-top: 18px;
+    font-size: 0.9rem;
+    background-color: var(--background-secondary);
+    color: var(--color-secondary);
+    width: 100vw;
+    padding: 20px 50px 45px;
+    transform: translateY(25px);
+  }
+</style>
