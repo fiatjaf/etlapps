@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"promise-window": "^1.2.1",
 		"svelte-kjua": "^1.0.2"
 	}
 }

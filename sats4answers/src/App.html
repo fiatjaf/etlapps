@@ -3,11 +3,10 @@
 <script>
   import Router from 'svelte-spa-router'
   import {onMount} from 'svelte'
-  import {Account} from 'etleneum-client'
   import Auth from '../../components/Auth.html'
 
   import {NAME, CONTRACT} from './constants'
-  import {account, kad, s4a} from './stores'
+  import {etleneumAccount, account, kad, s4a} from './stores'
   import Index from './Index.html'
   import Answerer from './Answerer.html'
   import Asker from './Asker.html'
@@ -35,7 +34,7 @@
         to know something from. Login to start. {/if}
       </p>
     </div>
-    <Auth qrsize="{200}" account="{account}" />
+    <Auth qrsize="{200}" account="{etleneumAccount}" />
   </header>
   <main><Router {routes} /></main>
   <footer>

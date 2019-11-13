@@ -76,7 +76,7 @@ async function loads4a(set) {
   }
 }
 
-const etleneumAccount = Account()
+export const etleneumAccount = Account()
 export const account = readable(etleneumAccount, etleneumAccount.subscribe)
 
 export const kad = readable(
