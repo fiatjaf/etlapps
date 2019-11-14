@@ -7,6 +7,7 @@
   import {readable} from 'svelte/store'
   import QR from 'svelte-kjua'
 
+  import Auth from '../../components/Auth.html'
   import {CONTRACT, NAME} from './constants'
   import * as toast from '../../helpers/toast'
 
@@ -26,6 +27,23 @@
   var suggestions = []
   var call
   var errmessage
+
+  const exampleBundle = `-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+73a1c52164efadb5194f7af75d71de1ccc0aa58586b8accc4f0a36ed49da27a4
+-----BEGIN PGP SIGNATURE-----
+Version: Keybase OpenPGP v2.1.3
+Comment: https://keybase.io/crypto
+
+wsBcBAABCgAGBQJdrR2oAAoJEAJs7pbOl+xqQA0H/32xUyVE+GSxsJ5xN1IbbBsK
+eZH7H2IqQ+VTWUcS1x2JprsfKWlZ9Eks3mWpSOG6Jb9TUX08t+JAMS56uZNU5zeX
+wN5i3Cc6V9R7q0Nzk/b2Z7wsZfuyhoxF/ybCnYy4Mj5NnkIo+yt44+s3L3MA1aEg
+nkcg9JeJHzdu/jwQ4Lc6StJ8d3OV+7igQo8Ax0aAFV7pS3tSg3upqd6M5JtmiuIq
+4lkU4NkaGGMJTnpCcUajn+z9isUUyQR5B+sMI3w7Q6jNZ0FRe7NAVKxl3d6QfwA9
+pDYxl6ZWEnVSWjqM6V2Rncu1zR4g83++z8bqWrK2FBm8EzTHUVDPChPwEzFHLrQ=
+=LcDv
+-----END PGP SIGNATURE-----`
 
   onMount(loadContract)
 
@@ -136,6 +154,13 @@
     padding: 4px 12px;
     display: block;
   }
+  #auth {
+    padding: 20px;
+    transition: 0.2s ease-out background-color;
+  }
+  #auth:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
 </style>
 
 <div class="center">
@@ -147,6 +172,9 @@
       <a href="https://etleneum.com/">Etleneum</a> ecosystem.
     </p>
   </div>
+
+  <div id="auth"><Auth account="{etleneumAccount}" /></div>
+
   {#if errmessage}
   <div>
     <h2>Error</h2>
@@ -175,27 +203,11 @@
       Visit
       <a href="https://keybase.io/sign" target="_blank"
         >https://keybase.io/sign</a
-      >, sign the message <em>{challenge}</em>, copy the result and paste here:
+      >, sign the message <em>{challenge}</em>, copy the result and paste here.
+      When using GPG, pass the option --clear-sign so it produces an output in
+      the way we expect here.
     </p>
-    <textarea bind:value="{bundle}" />
-    {:else if $account.lnurl && $account.lnurl.auth}
-    <p>
-      Login to Etleneum using an
-      <a href="https://github.com/fiatjaf/awesome-lnurl" target="_blank"
-        >lnurl-auth</a
-      >-powered wallet:
-    </p>
-    <a href="lightning:{$account.lnurl.auth}"
-      ><QR value="{$account.lnurl.auth}"
-    /></a>
-    <p>
-      or
-      <a
-        href="https://seed-auth.etleneum.com/#/lnurl/{$account.lnurl.auth}"
-        target="_blank"
-        >login and password</a
-      >.
-    </p>
+    <textarea bind:value="{bundle}" placeholder="{exampleBundle}" />
     {/if}
     <button disabled="{!bundle || !keybase_name}" on:click="{action}">
       Link

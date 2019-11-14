@@ -23,15 +23,24 @@
     <div>
       <h1><a href="#/">{NAME}</a></h1>
       <p>
-        {#if $account.id} {#if $s4a.byAsker[$account.id].length}
+        {#if $account.id}
+        <!---->
+        {#if $account.id in $s4a.byAsker && $s4a.byAsker[$account.id].length}
         <a href="#/q/{$account.id}">Questions you've asked.</a>
-        {/if} {#if $account.id in $kad.kbFromId &&
-        $s4a.byTarget[$kad.kbFromId[$account.id]].length}
+        {/if}
+        <!---->
+        {#if $account.id in $kad.kbFromId && $kad.kbFromId[$account.id] in
+        $s4a.byTarget && $s4a.byTarget[$kad.kbFromId[$account.id]].length}
         <a href="#/a/{$kad.kbFromId[$account.id]}"
           >Questions you've been asked.</a
         >
-        {/if} {:else} Offer bounties to finally get answers from people you want
-        to know something from. Login to start. {/if}
+        {:else} To answer questions you first must link your Keybase account at
+        <a href="https://kad.etleneum.com/">https://kad.etleneum.com/</a>. {/if}
+        <!---->
+        {:else} Offer bounties to finally get answers from people you want to
+        know something from. Login to start.
+        <!---->
+        {/if}
       </p>
     </div>
     <Auth qrsize="{200}" account="{etleneumAccount}" />
