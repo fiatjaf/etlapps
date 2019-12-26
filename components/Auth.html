@@ -159,7 +159,10 @@
     <a href="https://etleneum.com/" class="logout" on:click="{logout}">Logout</a
     >.
   </p>
-  {/if}
+  <a class="qr" href="lightning:{$account.lnurl.withdraw}"
+    ><QR value="{$account.lnurl.withdraw}" size="{qrsize/2}"
+  /></a>
+  Withdraw. {/if}
 </div>
 
 <style>
