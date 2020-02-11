@@ -2,7 +2,7 @@
 
 <script>
   import {readable} from 'svelte/store'
-  import * as toast from '../helpers/toast'
+  import * as toast from './toast'
   import QR from 'svelte-kjua'
   import PromiseWindow from 'promise-window'
 
@@ -49,7 +49,7 @@
   }
 </script>
 
-<div>
+<div class="widget">
   {#if awaitingSeedAuth}
   <div>
     <svg
@@ -159,15 +159,21 @@
     <a href="https://etleneum.com/" class="logout" on:click="{logout}">Logout</a
     >.
   </p>
-  <a class="qr" href="lightning:{$account.lnurl.withdraw}"
-    ><QR value="{$account.lnurl.withdraw}" size="{qrsize/2}"
-  /></a>
-  Withdraw. {/if}
+  <a class="qr" href="lightning:{$account.lnurl.withdraw}">
+    <QR value="{$account.lnurl.withdraw}" size="{qrsize/2}" />
+    Withdraw.
+  </a>
+  {/if}
 </div>
 
 <style>
+  .widget {
+    max-width: 300px;
+    margin: 50px auto;
+  }
   .qr {
     text-align: center;
+    display: block;
   }
   p {
     text-align: center;

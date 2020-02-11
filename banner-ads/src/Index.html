@@ -1,0 +1,44 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+  import {readable} from 'svelte/store'
+
+  import * as toast from '../../components/toast'
+
+  const contract = getContext('contract')
+
+  onMount(loadBanners)
+
+  var banners = []
+
+  async function loadBanners() {
+    try {
+      banners = await contract.state(
+        `.ad_queue as $q | .current_ads as $c | .banners | to_entries | map(select(.key != "_")) | map(.value.id = .key | .value) | map(.currently = ($q[.id] + [$c[.id]] | reduce .[] as $item (0; . + $item.msatoshi))) | sort_by(.currently)`
+      )
+    } catch (err) {
+      toast.error(`Failed to get contract: ${err}`)
+    }
+  }
+</script>
+
+<style>
+  .banner a {
+    display: block;
+    font-size: 80%;
+  }
+</style>
+
+<div>
+  <h2>Registered banners</h2>
+  {#each banners as banner (banner.id)}
+  <div class="banner">
+    <a href="#/{banner.id}">{banner.id}</a>
+    <em>{banner.url} at {banner.msatoshi_per_hour} msat per hour</em>: {#if
+    banner.currently} {parseInt(banner.currently / 1000)} sat queued {:else}
+    available now {/if}
+  </div>
+  {/each}
+</div>
+<h3><a href="#/account" class="button">Add or manage a banner</a></h3>

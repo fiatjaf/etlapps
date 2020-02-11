@@ -1,0 +1,54 @@
+<!-- @format -->
+
+<script>
+  import {setContext} from 'svelte'
+  import Router from 'svelte-spa-router'
+  import {Contract} from 'etleneum'
+
+  import {NAME, CONTRACT} from './constants'
+  import Index from './Index.html'
+  import Account from './Account.html'
+  import Banner from './Banner.html'
+
+  setContext('contract', Contract(CONTRACT))
+
+  const routes = {
+    '/': Index,
+    '/account': Account,
+    '/:banner_id': Banner
+  }
+</script>
+
+<style>
+  h1 {
+    color: var(--emphasis-rare);
+  }
+  main {
+    margin: 43px auto;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  footer {
+    width: 100%;
+    margin-top: 180px;
+    padding-top: 18px;
+    font-size: 0.9rem;
+  }
+</style>
+
+<main>
+  <div>
+    <h1><a href="#/">{NAME}</a></h1>
+    <Router {routes} />
+  </div>
+</main>
+<footer>
+  <b>{NAME}</b> is an
+  <a href="https://etleneum.com/#/contract/{CONTRACT}" target="_blank"
+    >Etleneum</a
+  >
+  contract. All its core functionalities are defined there within visible and
+  immutable code you should read before calling methods here.
+</footer>

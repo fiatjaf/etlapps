@@ -1,0 +1,159 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+  import {readable} from 'svelte/store'
+  import QR from 'svelte-kjua'
+
+  import * as toast from '../../components/toast'
+
+  const contract = getContext('contract')
+
+  export let params
+
+  onMount(loadBanner)
+
+  var banner
+  var useImage
+  var satoshis = 0
+  var call
+
+  function toggleImage(e) {
+    useImage = e.target.value === 'image' && e.target.checked
+  }
+
+  async function loadBanner() {
+    try {
+      banner = await contract.state(
+        `.current_ads.${params.banner_id} as $c | .ad_queue${params.banner_id} as $q | .banners.${params.banner_id} | .current = $c | .queue = if $q then $q else [] end`
+      )
+    } catch (err) {
+      toast.error(`Failed to load banner ${params.banner_id}: ${err}`)
+    }
+  }
+
+  async function queueAd(e) {
+    e.preventDefault()
+
+    let msatoshi = satoshis * 1000
+    let id = params.banner_id
+    let link = e.target.link.value.trim()
+    let image_url = e.target.image.value.trim()
+    let text = e.target.text.value.trim()
+
+    try {
+      call = await contract.prepareCall('queue_ad', msatoshi, {
+        id,
+        link,
+        image_url,
+        text
+      })
+
+      let stop = contract.stream(
+        id => {
+          if (id === call.id) {
+            toast.success('Success!')
+            call = null
+            satoshis = 0
+            setTimeout(stop, 1)
+            loadBanner()
+          }
+        },
+        (id, err) => {
+          if (id === call.id) {
+            toast.warning('Error: ' + err.message)
+            setTimeout(stop, 1)
+          }
+        }
+      )
+    } catch (err) {
+      toast.warning(`Failed to queue ad: ${err}`)
+    }
+  }
+</script>
+
+<style>
+  section {
+    margin: 20px 0;
+  }
+  label,
+  button {
+    display: block;
+    margin: 7px 0;
+  }
+  .switch label {
+    display: inline-block;
+  }
+</style>
+
+{#if banner}
+<h2>Banner at <em>{banner.url}</em></h2>
+<section>
+  <b>Price:</b> {(banner.msatoshi_per_hour * 24 / 1000).toFixed(3)} sat per day
+</section>
+<section>
+  <b>Currently showing:</b>
+  {#if banner.current}
+  <dl>
+    <dt>Link:</dt>
+    <dd>{banner.link}</dd>
+    {#if banner.text}
+    <dt>Text:</dt>
+    <dd>{banner.current}</dd>
+    {/if} {#if banner.image_url}
+    <dt>Image:</dt>
+    <dd>{banner.image_url}</dd>
+    {/if}
+  </dl>
+  until {banner.end_time}. {:else} nothing. {/if}
+</section>
+<section>
+  <b>Next in queue:</b>
+  {#each banner.queue as banner}
+  <div>{banner.link} for {(banner.seconds/60/60).toFixed(1)} hours</div>
+  {:else} none. {/each}
+</section>
+<section>
+  <b>Queue an ad:</b>
+  {#if call}
+  <p>Pay to finish the operation:</p>
+  <a href="lightning:{call.invoice}"><QR value="{call.invoice}"/></a>
+  <div class="wrap">{call.invoice}</div>
+  {:else}
+  <form on:submit="{queueAd}">
+    <label>Link: <input name="link" type="url"/></label>
+    <div class="switch">
+      <label>
+        Use an image
+        <input
+          name="imageortext"
+          value="image"
+          type="radio"
+          on:click="{toggleImage}"
+          selected
+        />
+      </label>
+      <label>
+        Use text
+        <input
+          name="imageortext"
+          value="text"
+          type="radio"
+          on:click="{toggleImage}"
+        />
+      </label>
+    </div>
+    {#if useImage === true}
+    <label>Image URL: <input name="image" type="url"/></label>
+    {:else if useImage === false}
+    <label>Text: <input name="text"/></label>
+    {/if}
+    <label
+      >Satoshis: <input bind:value="{satoshis}" type="number" /> (buys
+      {(satoshis*1000/banner.msatoshi_per_hour ).toFixed(1)} hours)</label
+    >
+    <button>Queue</button>
+  </form>
+  {/if}
+</section>
+{:else} loading banner {params.banner_id} {/if}

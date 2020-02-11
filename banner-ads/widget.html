@@ -1,0 +1,36 @@
+<script id="etleneum-ad">
+(function (ctid, b, placeholder, w, h) {
+  fetch(`https://etleneum.com/~/contract/${ctid}/state/.current_ads["${b}"]`)
+    .then(r => r.json())
+    .then(({value: ad}) => {
+      let a = document.createElement('a')
+      let s = document.getElementById('etleneum-ad')
+      s.parentNode.insertBefore(a, s)
+    
+      a.style.display = 'flex'
+      a.style.justifyContent = 'center'
+      a.style.alignItems = 'center'
+      a.style.width = `${w}px`
+      a.style.height = `${h}px`
+
+      if (!ad) {
+        a.href = `https://etleneum.com/#/contract/${ctid}`
+        a.innerHTML = placeholder
+        return
+      }
+
+      let {text, image_url, link} = ad
+      a.href = link
+      if (image_url) {
+        let c = document.createElement('img')
+        c.src = image_url
+        a.appendChild(c)
+      } else {
+        a.innerHTML = text
+        a.style.display = 'flex'
+        a.style.justifyContent = 'center'
+        a.style.alignItems = 'center'
+      }
+    })
+})(ctid, bid, placeholder, w, h)
+</script>
