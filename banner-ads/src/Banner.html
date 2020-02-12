@@ -74,7 +74,7 @@
 
 <style>
   section {
-    margin: 20px 0;
+    margin: 40px 0;
   }
   label,
   button {
@@ -152,8 +152,19 @@
       >Satoshis: <input bind:value="{satoshis}" type="number" /> (buys
       {(satoshis*1000/banner.msatoshi_per_hour ).toFixed(1)} hours)</label
     >
+    <small>
+      Before paying for an ad visit {banner.url} and verify if the banner is
+      there. Also check the banner size so you can tweak you ad text or image to
+      fit it decently.
+    </small>
     <button>Queue</button>
   </form>
   {/if}
+</section>
+<section>
+  <b>Embeddable widget:</b>
+  <a href="widget.txt" target="_blank"
+    >&lt;adjust params, copy and paste on {banner.url}&gt;</a
+  >
 </section>
 {:else} loading banner {params.banner_id} {/if}
