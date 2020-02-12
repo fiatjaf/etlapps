@@ -1,20 +1,43 @@
+<style>
+#banner-ad-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-style: solid;
+  border-width: 4px;
+  padding: 2px 4px;
+  text-decoration: none;
+  position: relative;
+}
+#banner-ad-banner::before {
+  content: 'advertisement';
+  background-color: white;
+  padding: 4px;
+  position: absolute;
+  left: 0;
+  top: -14px;
+  right: 0;
+  margin: 0 auto;
+  display: inline-block;
+  width: 140px;
+}
+</style>
 <script id="etleneum-ad">
-(function (ctid, b, placeholder, w, h) {
-  fetch(`https://etleneum.com/~/contract/${ctid}/state/.current_ads["${b}"]`)
+(function(b, placeholder, w, h) {
+  fetch(
+    `https://etleneum.com/~/contract/cko001spd3/state/.current_ads.${b}`
+  )
     .then(r => r.json())
     .then(({value: ad}) => {
       let a = document.createElement('a')
-      let s = document.getElementById('etleneum-ad')
+      let s = document.getElementById('banner-ad')
       s.parentNode.insertBefore(a, s)
-    
-      a.style.display = 'flex'
-      a.style.justifyContent = 'center'
-      a.style.alignItems = 'center'
+      a.id = 'banner-ad-banner'
       a.style.width = `${w}px`
       a.style.height = `${h}px`
 
       if (!ad) {
-        a.href = `https://etleneum.com/#/contract/${ctid}`
+        a.href = `https://banners.etleneum.com/#/${b}`
         a.innerHTML = placeholder
         return
       }
@@ -26,11 +49,16 @@
         c.src = image_url
         a.appendChild(c)
       } else {
-        a.innerHTML = text
+        a.innerText = text
         a.style.display = 'flex'
         a.style.justifyContent = 'center'
         a.style.alignItems = 'center'
       }
     })
-})(ctid, bid, placeholder, w, h)
+})(
+  'banner-id-here',
+  'advertise here!',
+  600,
+  400
+)
 </script>
