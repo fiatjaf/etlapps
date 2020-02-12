@@ -8,7 +8,7 @@
   import * as toast from '../../components/toast'
 
   const contract = getContext('contract')
-
+  const kbaccounts = getContext('kbaccounts')
   export let params
 
   onMount(loadBanner)
@@ -25,7 +25,7 @@
   async function loadBanner() {
     try {
       banner = await contract.state(
-        `.current_ads.${params.banner_id} as $c | .ad_queue${params.banner_id} as $q | .banners.${params.banner_id} | .current = $c | .queue = if $q then $q else [] end`
+        `.current_ads.${params.banner_id} as $c | .ad_queue.${params.banner_id} as $q | .banners.${params.banner_id} | .current = $c | .queue = if $q then $q else [] end`
       )
     } catch (err) {
       toast.error(`Failed to load banner ${params.banner_id}: ${err}`)
@@ -36,18 +36,16 @@
     e.preventDefault()
 
     let msatoshi = satoshis * 1000
-    let id = params.banner_id
-    let link = e.target.link.value.trim()
-    let image_url = e.target.image.value.trim()
-    let text = e.target.text.value.trim()
+    let data = {id: params.banner_id, link: e.target.link.value.trim()}
+
+    if (useImage) {
+      data.image_url = e.target.image.value.trim()
+    } else {
+      data.text = e.target.text.value.trim()
+    }
 
     try {
-      call = await contract.prepareCall('queue_ad', msatoshi, {
-        id,
-        link,
-        image_url,
-        text
-      })
+      call = await contract.prepareCall('queue_ad', msatoshi, data)
 
       let stop = contract.stream(
         id => {
@@ -74,12 +72,26 @@
 
 <style>
   section {
-    margin: 40px 0;
+    margin: 20px 20px;
+    padding: 25px 20px;
+    background-color: var(--background-secondary);
+    color: var(--color-secondary);
+    border-radius: 20px;
+  }
+  dt {
+    color: var(--emphasis);
+  }
+  dd {
+    font-family: monospace;
   }
   label,
   button {
     display: block;
     margin: 7px 0;
+  }
+  button {
+    background-color: var(--background-main);
+    color: var(--color-main);
   }
   .switch label {
     display: inline-block;
@@ -87,7 +99,13 @@
 </style>
 
 {#if banner}
-<h2>Banner at <em>{banner.url}</em></h2>
+<h2>
+  Banner at <em>{banner.url}</em> by {#if $kbaccounts[banner.account]}<a
+    href="https://keybase.io/{$kbaccounts[banner.account]}"
+    target="_blank"
+    >{$kbaccounts[banner.account]}</a
+  >{:else}{banner.account}{/if}
+</h2>
 <section>
   <b>Price:</b> {(banner.msatoshi_per_hour * 24 / 1000).toFixed(3)} sat per day
 </section>
@@ -96,22 +114,25 @@
   {#if banner.current}
   <dl>
     <dt>Link:</dt>
-    <dd>{banner.link}</dd>
-    {#if banner.text}
+    <dd>{banner.current.link}</dd>
+    {#if banner.current.text}
     <dt>Text:</dt>
-    <dd>{banner.current}</dd>
-    {/if} {#if banner.image_url}
+    <dd>{banner.current.text}</dd>
+    {/if} {#if banner.current.image_url}
     <dt>Image:</dt>
-    <dd>{banner.image_url}</dd>
+    <dd>{banner.current.image_url}</dd>
     {/if}
   </dl>
-  until {banner.end_time}. {:else} nothing. {/if}
+  until <em>{(new Date(banner.current.end_time)).toUTCString()}</em>. {:else}
+  nothing. {/if}
 </section>
 <section>
   <b>Next in queue:</b>
-  {#each banner.queue as banner}
-  <div>{banner.link} for {(banner.seconds/60/60).toFixed(1)} hours</div>
-  {:else} none. {/each}
+  <ol>
+    {#each banner.queue as banner}
+    <li>{banner.link} for {(banner.seconds/60/60).toFixed(1)} hours</li>
+    {:else} none. {/each}
+  </ol>
 </section>
 <section>
   <b>Queue an ad:</b>

@@ -2,6 +2,7 @@
 
 <script>
   import {setContext} from 'svelte'
+  import {readable} from 'svelte/store'
   import Router from 'svelte-spa-router'
   import {Contract} from 'etleneum'
 
@@ -11,6 +12,17 @@
   import Banner from './Banner.html'
 
   setContext('contract', Contract(CONTRACT))
+  setContext(
+    'kbaccounts',
+    readable({}, set => {
+      Contract('cog4wt7q8n3')
+        .state(
+          `.identities | to_entries | map(select(.key != "_")) | map({key: .value, value: .key}) | from_entries`
+        )
+        .then(set)
+      return () => {}
+    })
+  )
 
   const routes = {
     '/': Index,
@@ -26,7 +38,7 @@
   main {
     margin: 43px auto;
   }
-  a {
+  h1 a {
     text-decoration: none;
     color: inherit;
   }
@@ -35,6 +47,9 @@
     margin-top: 180px;
     padding-top: 18px;
     font-size: 0.9rem;
+  }
+  footer a {
+    color: var(--emphasis-rare);
   }
 </style>
 

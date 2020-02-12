@@ -7,6 +7,7 @@
   import * as toast from '../../components/toast'
 
   const contract = getContext('contract')
+  const kbaccounts = getContext('kbaccounts')
 
   onMount(loadBanners)
 
@@ -15,7 +16,7 @@
   async function loadBanners() {
     try {
       banners = await contract.state(
-        `.ad_queue as $q | .current_ads as $c | .banners | to_entries | map(select(.key != "_")) | map(.value.id = .key | .value) | map(.currently = ($q[.id] + [$c[.id]] | reduce .[] as $item (0; . + $item.msatoshi))) | sort_by(.currently)`
+        `.ad_queue as $q | .current_ads as $c | .banners | to_entries | map(select(.key != "_")) | map(.value.id = .key | .value) | map(.currently = if $q[.id] then $q[.id] | map(.msatoshi) | add else 0 end + if $c[.id] then $c[.id].msatoshi else 0 end) | sort_by(.currently) | reverse`
       )
     } catch (err) {
       toast.error(`Failed to get contract: ${err}`)
@@ -24,7 +25,10 @@
 </script>
 
 <style>
-  .banner a {
+  .banner {
+    margin-bottom: 10px;
+  }
+  .banner header {
     display: block;
     font-size: 80%;
   }
@@ -37,7 +41,14 @@
   <h2>Registered banners</h2>
   {#each banners as banner (banner.id)}
   <div class="banner">
-    <a href="#/{banner.id}">{banner.id}</a>
+    <header>
+      <a href="#/{banner.id}">{banner.id}</a>
+      by {#if $kbaccounts[banner.account]}<a
+        href="https://keybase.io/{$kbaccounts[banner.account]}"
+        target="_blank"
+        >{$kbaccounts[banner.account]}</a
+      >{:else}{banner.account}{/if}
+    </header>
     <em>{banner.url} at {banner.msatoshi_per_hour} msat per hour</em>: {#if
     banner.currently} {parseInt(banner.currently / 1000)} sat queued {:else}
     available now {/if}
