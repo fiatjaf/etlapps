@@ -123,7 +123,7 @@
     <dd>{banner.current.image_url}</dd>
     {/if}
   </dl>
-  until <em>{(new Date(banner.current.end_time)).toUTCString()}</em>. {:else}
+  until <em>{(new Date(banner.current.end_time * 1000)).toUTCString()}</em>. {:else}
   nothing. {/if}
 </section>
 <section>
