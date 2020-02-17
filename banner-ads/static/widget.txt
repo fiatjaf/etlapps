@@ -22,7 +22,7 @@
   width: 140px;
 }
 </style>
-<script id="etleneum-ad">
+<script id="banner-ad">
 (function(b, placeholder, w, h) {
   fetch(
     `https://etleneum.com/~/contract/cko001spd3/state/.current_ads.${b}`
