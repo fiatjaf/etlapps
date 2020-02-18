@@ -6,6 +6,7 @@
   import QR from 'svelte-kjua'
 
   import * as toast from '../../components/toast'
+  import {makeSnippet} from './widget'
 
   const contract = getContext('contract')
   const kbaccounts = getContext('kbaccounts')
@@ -17,6 +18,14 @@
   var useImage
   var satoshis = 0
   var call
+  var width = 500
+  var height = 200
+  var showWidget = false
+
+  function toggleWidget(e) {
+    e.preventDefault()
+    showWidget = !showWidget
+  }
 
   function toggleImage(e) {
     useImage = e.target.value === 'image' && e.target.checked
@@ -84,11 +93,22 @@
   dd {
     font-family: monospace;
   }
-  label,
-  button {
+
+  section:not(.widget) label,
+  section:not(.widget) button {
     display: block;
     margin: 7px 0;
   }
+
+  section.widget form {
+    font-family: sans-serif;
+    font-size: 70%;
+    margin-top: 20px;
+  }
+  section.widget input {
+    width: 60px;
+  }
+
   button {
     background-color: var(--background-main);
     color: var(--color-main);
@@ -123,8 +143,8 @@
     <dd>{banner.current.image_url}</dd>
     {/if}
   </dl>
-  until <em>{(new Date(banner.current.end_time * 1000)).toUTCString()}</em>. {:else}
-  nothing. {/if}
+  until <em>{(new Date(banner.current.end_time * 1000)).toUTCString()}</em>.
+  {:else} nothing. {/if}
 </section>
 <section>
   <b>Next in queue:</b>
@@ -182,10 +202,16 @@
   </form>
   {/if}
 </section>
-<section>
-  <b>Embeddable widget:</b>
-  <a href="widget.txt" target="_blank"
-    >&lt;adjust params, copy and paste on {banner.url}&gt;</a
-  >
+<section class="widget">
+  <b>Embed code:</b> <button on:click="{toggleWidget}">toggle</button>
+  {#if showWidget}
+  <form>
+    <label>Width <input type="number" bind:value="{width}"/></label> x
+    <label><input type="number" bind:value="{height}" /> Height</label>
+  </form>
+  <pre>
+    <code>{makeSnippet(banner.id, width, height)}</code>
+  </pre>
+  {/if}
 </section>
 {:else} loading banner {params.banner_id} {/if}
