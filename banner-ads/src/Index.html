@@ -32,11 +32,17 @@
     display: block;
     font-size: 80%;
   }
+  .banner a.button {
+    display: inline-block;
+  }
   h3 {
     margin-top: 50px;
   }
   #howitworks b {
     color: var(--emphasis-rare);
+  }
+  h3 a.button {
+    padding-top: 16px;
   }
 </style>
 
@@ -70,9 +76,15 @@
         >{$kbaccounts[banner.account]}</a
       >{:else}{banner.account}{/if}
     </header>
-    <em>{banner.url} at {banner.msatoshi_per_hour} msat per hour</em>: {#if
-    banner.currently} {parseInt(banner.currently / 1000)} sat queued {:else}
-    empty now {/if}
+    <div>
+      <em>{banner.url}</em> at
+      <em>{parseInt(banner.msatoshi_per_hour * 24 / 1000)} sat per day</em>
+    </div>
+    <div>
+      {#if banner.currently} {parseInt(banner.currently / 1000)} sat queued
+      {:else} empty now {/if}
+      <a href="#/{banner.id}" class="button">Advertise</a>
+    </div>
   </div>
   {/each}
 </div>
