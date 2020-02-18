@@ -2,8 +2,9 @@
 
 export function makeSnippet(bannerId, width, height) {
   return `
+<div id="banner-ad">
 <style>
-#banner-ad-banner {
+#banner-ad > a {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,31 +14,38 @@ export function makeSnippet(bannerId, width, height) {
   text-decoration: none;
   position: relative;
 }
-#banner-ad-banner::before {
-  content: 'advertisement';
+#banner-ad,
+#banner-ad > a,
+#banner-ad > a > img {
+  width: ${width}px;
+  height: ${height}px;
+}
+#banner-ad > a > a {
+  text-decoration: none;
   background-color: white;
   padding: 4px;
   position: absolute;
   left: 0;
-  top: -14px;
-  right: 0;
+  top: -13px;
   margin: 0 auto;
   display: inline-block;
-  width: 140px;
+  font-size: 70%;
 }
 </style>
-<script id="banner-ad">
+<script>
 fetch(
   "https://etleneum.com/~/contract/cko001spd3/state/.current_ads.${bannerId}"
 )
   .then(r => r.json())
   .then(({value: ad}) => {
-    let a = document.createElement('a')
     let s = document.getElementById('banner-ad')
-    s.parentNode.insertBefore(a, s)
-    a.id = 'banner-ad-banner'
-    a.style.width = "${width}px"
-    a.style.height = "${height}px"
+    let a = document.createElement('a')
+    let l = document.createElement('a')
+    s.appendChild(a)
+    a.appendChild(l)
+    l.href = "https://banners.etleneum.com/#/${bannerId}"
+    l.innerHTML = "advertisement"
+    l.target = '_blank'
 
     if (!ad) {
       a.href = "https://banners.etleneum.com/#/${bannerId}"
@@ -59,5 +67,6 @@ fetch(
     }
   })
 </script>
+</div>
 `
 }

@@ -18,13 +18,25 @@
   var useImage
   var satoshis = 0
   var call
-  var width = 500
-  var height = 200
+  var width = parseInt(localStorage.getItem(`${params.banner_id}:width`) || 500)
+  var height = parseInt(
+    localStorage.getItem(`${params.banner_id}:height`) || 200
+  )
   var showWidget = false
 
   function toggleWidget(e) {
     e.preventDefault()
     showWidget = !showWidget
+  }
+
+  function saveWidth(e) {
+    width = e.target.value
+    localStorage.setItem(`${params.banner_id}:width`, width)
+  }
+
+  function saveHeight(e) {
+    height = e.target.value
+    localStorage.setItem(`${params.banner_id}:height`, height)
   }
 
   function toggleImage(e) {
@@ -206,11 +218,17 @@
   <b>Embed code:</b> <button on:click="{toggleWidget}">toggle</button>
   {#if showWidget}
   <form>
-    <label>Width <input type="number" bind:value="{width}"/></label> x
-    <label><input type="number" bind:value="{height}" /> Height</label>
+    <label
+      >Width <input type="number" on:input="{saveWidth}" value="{width}"
+    /></label>
+    x
+    <label
+      ><input type="number" on:input="{saveHeight}" value="{height}" />
+      Height</label
+    >
   </form>
   <pre>
-    <code>{makeSnippet(banner.id, width, height)}</code>
+    <code>{makeSnippet(params.banner_id, width, height)}</code>
   </pre>
   {/if}
 </section>
