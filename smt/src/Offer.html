@@ -1,0 +1,250 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+
+  import account from '../../components/etleneumAccountStore'
+  import PayToCall from '../../components/PayToCall.html'
+
+  const contract = getContext('contract')
+  const kbaccounts = getContext('kbaccounts')
+
+  export let params
+  var offer
+  var completing = null
+  var call
+
+  onMount(loadOffer)
+
+  async function loadOffer() {
+    try {
+      offer = await contract.state(
+        `[.open.${params.offer_id}] + [.closed.${params.offer_id}] | .[0]`
+      )
+      offer.completions = offer.completions || {}
+    } catch (err) {
+      toast.error(`Failed to load offer: ${err}`)
+    }
+  }
+
+  async function addFunds(e) {
+    e.preventDefault()
+
+    try {
+      call = await contract.prepareCall(
+        'create',
+        parseInt(e.target.satoshis.value) * 1000,
+        {taskid: params.offer_id},
+        $account.session
+      )
+
+      call.stop = contract.stream(
+        id => {
+          if (id === call.id) {
+            toast.success('Bounty created!')
+            call = null
+            satoshis = 0
+            setTimeout(call.stop, 1)
+            loadBanner()
+          }
+        },
+        (id, err) => {
+          if (id === call.id) {
+            toast.warning('Error: ' + err.message)
+            setTimeout(call.stop, 1)
+          }
+        }
+      )
+    } catch (err) {
+      toast.warning(`Failed to create bounty: ${err}`)
+    }
+  }
+
+  async function startCompleting(e) {
+    e.preventDefault()
+    completing = true
+  }
+
+  async function sendCompletion(e) {
+    e.preventDefault()
+
+    try {
+      call = await contract.prepareCall(
+        'complete',
+        0,
+        {taskid: params.offer_id, content: e.target.content},
+        $account.session
+      )
+
+      call.stop = contract.stream(
+        id => {
+          if (id === call.id) {
+            toast.success('Completion sent!')
+            call = null
+            satoshis = 0
+            setTimeout(call.stop, 1)
+            loadBanner()
+          }
+        },
+        (id, err) => {
+          if (id === call.id) {
+            toast.warning('Error: ' + err.message)
+            setTimeout(call.stop, 1)
+          }
+        }
+      )
+    } catch (err) {
+      toast.warning(`Failed to send completion: ${err}`)
+    }
+  }
+
+  async function vote(e) {
+    e.preventDefault()
+
+    try {
+      call = await contract.prepareCall(
+        'award',
+        0,
+        {taskid: params.offer_id, completer: e.target.completer},
+        $account.session
+      )
+
+      call.stop = contract.stream(
+        id => {
+          if (id === call.id) {
+            toast.success('Vote sent!')
+            call = null
+            satoshis = 0
+            setTimeout(call.stop, 1)
+            loadBanner()
+          }
+        },
+        (id, err) => {
+          if (id === call.id) {
+            toast.warning('Error: ' + err.message)
+            setTimeout(call.stop, 1)
+          }
+        }
+      )
+    } catch (err) {
+      toast.warning(`Failed to send vote: ${err}`)
+    }
+  }
+
+  function cancel() {
+    call.stop()
+    call = null
+  }
+</script>
+
+<style>
+  h2 {
+    color: var(--emphasis-rare);
+  }
+  #offer input,
+  #offer form,
+  #offer button {
+    margin: 0;
+  }
+  #offer small {
+    display: block;
+    margin: 0 15px 15px 15px;
+  }
+
+  #completion textarea {
+    display: block;
+    margin: 13px;
+    width: 70%;
+    height: 160px;
+    padding: 10px;
+  }
+</style>
+
+<div>
+  {#if call}
+  <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
+  {:else if offer}
+  <h2>{offer.head}</h2>
+  <div id="offer">
+    <p>
+      Bounty:
+      <b>
+        {Object.keys(offer.bounty).reduce((acc, u) => acc + offer.bounty[u],
+        0)}sat
+      </b>
+    </p>
+    <ul>
+      {#each Object.keys(offer.bounty) as acct}
+      <li>
+        <span>{acct in $kbaccounts ? $kbaccounts[acct] : acct}</span>:
+        <b>{offer.bounty[acct]}sat</b>
+      </li>
+      {/each}
+      <li>
+        <form on:submit="{addFunds}">
+          <input name="satoshis" type="number" value="1000" />
+          <button>add funds{#if !$account} anonymously{/if}</button>
+        </form>
+      </li>
+    </ul>
+    {#if offer.desc}
+    <small>{offer.desc}</small>
+    {/if}
+  </div>
+  <div>
+    Resolvable by <em>{offer.needed} / {offer.voters.length}</em> of [<em>
+      {offer.voters.map(acct => acct in $kbaccounts ? $kbaccounts[acct] :
+      acct).join(' ')}</em
+    >].
+    <br />
+    Created on {(new Date(offer.created_at * 1000)).toGMTString()}.
+    <br />
+
+    <div id="completions">
+      {#each Object.keys(offer.completions) as completer}
+      <div>
+        <div>
+          <b>
+            <em>
+              {completer in $kbaccounts ? $kbaccounts[completer] : completer}
+            </em>
+          </b>
+          <p>{offer.completions[completer].content}</p>
+          <div>
+            <em>
+              {(new Date(offer.completions[completer].time *
+              1000)).toGMTString()}
+            </em>
+          </div>
+          {#if $account && offer.voters.indexOf($account.id) !== -1}
+          <button on:click="{vote}" data-completer="{completer}">
+            Vote
+          </button>
+          {/if}
+        </div>
+      </div>
+      {/each}
+    </div>
+
+    <div id="completion">
+      {#if !completing}
+      <button on:click="{startCompleting}">I've completed this project!</button>
+      {:else if $account && offer.voters.indexOf($account.id) === -1}
+      <form on:submit="{sendCompletion}">
+        <p>
+          Write a brief description, links or any other info that can be used to
+          assess your completion of this project:
+        </p>
+        <textarea name="content"></textarea>
+        <button>
+          Send completion
+        </button>
+      </form>
+      {/if}
+    </div>
+  </div>
+  {:else if offer === null}
+  <p>Offer {params.offer_id} doesn't exist.</p>
+  {/if}
+</div>
+<hr />
