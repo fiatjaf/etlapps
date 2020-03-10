@@ -5,14 +5,11 @@
   import * as toast from './toast'
   import QR from 'svelte-kjua'
   import PromiseWindow from 'promise-window'
+  import store, {account} from './etleneumAccountStore'
 
   const SEEDAUTH = window.SEEDAUTH || 'https://seed-auth.etleneum.com'
 
-  export let account
   export let qrsize = 300
-
-  const etleneumAccount = account
-  account = readable(etleneumAccount, set => etleneumAccount.subscribe(set))
 
   var awaitingSeedAuth = false
   var popupBlocked = false
@@ -26,7 +23,7 @@
 
     awaitingSeedAuth = true
     try {
-      await PromiseWindow.open(`${SEEDAUTH}/#/lnurl/${$account.lnurl.auth}`, {
+      await PromiseWindow.open(`${SEEDAUTH}/#/lnurl/${$store.lnurl.auth}`, {
         windowName: 'Login to etleneum.com',
         height: 500,
         width: 400
@@ -45,7 +42,7 @@
 
   function logout(e) {
     e.preventDefault()
-    etleneumAccount.reset()
+    account.reset()
   }
 </script>
 
@@ -130,23 +127,23 @@
       </g>
     </svg>
   </div>
-  {:else if !$account.id}
+  {:else if !$store.id}
   <p>
     Login to Etleneum using an
     <a href="https://github.com/fiatjaf/awesome-lnurl" target="_blank"
       >lnurl-auth</a
     >-powered wallet:
   </p>
-  <a class="qr" href="lightning:{$account.lnurl.auth}"
-    >{#if $account.lnurl.auth}<QR
-      value="{$account.lnurl.auth}"
+  <a class="qr" href="lightning:{$store.lnurl.auth}"
+    >{#if $store.lnurl.auth}<QR
+      value="{$store.lnurl.auth}"
       size="{qrsize}"
     />{/if}</a
   >
   <p>
     or using
     <a
-      href="https://seed-auth.etleneum.com/#/lnurl/{$account.lnurl.auth}"
+      href="https://seed-auth.etleneum.com/#/lnurl/{$store.lnurl.auth}"
       on:click="{handleSeedAuth}"
       target="_blank"
       >login and password</a
@@ -154,16 +151,17 @@
   </p>
   {:else}
   <p>
-    Logged as <em>{$account.id}</em> on
+    Logged as <em>{$store.id}</em> on
     <a href="https://etleneum.com/" target="_blank">etleneum.com</a>.
     <a href="https://etleneum.com/" class="logout" on:click="{logout}">Logout</a
     >.
   </p>
-  <a class="qr" href="lightning:{$account.lnurl.withdraw}">
-    <QR value="{$account.lnurl.withdraw}" size="{qrsize/2}" />
-    Withdraw.
+  {#if $store.balance}
+  <a class="qr" href="lightning:{$store.lnurl.withdraw}">
+    <QR value="{$store.lnurl.withdraw}" size="{qrsize/2}" />
+    Withdraw {$store.balance}sat
   </a>
-  {/if}
+  {/if} {/if}
 </div>
 
 <style>
@@ -178,5 +176,8 @@
   p {
     text-align: center;
     word-wrap: break-word;
+  }
+  * {
+    font-size: 90%;
   }
 </style>

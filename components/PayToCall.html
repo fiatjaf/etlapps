@@ -1,0 +1,44 @@
+<!-- @format -->
+
+<script>
+  import {createEventDispatcher} from 'svelte'
+  import QR from 'svelte-kjua'
+
+  const dispatch = createEventDispatcher()
+
+  export let invoice
+
+  function dispatchCancel(e) {
+    e.preventDefault()
+    dispatch('cancel')
+  }
+</script>
+
+<style>
+  .center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .wrap {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-all;
+    padding: 20px;
+    font-family: monospace;
+    background: rgba(206, 203, 183, 0.2);
+    font-size: 80%;
+    margin: 0 20%;
+  }
+  .cancel {
+    margin-top: 23px;
+  }
+</style>
+
+<div class="center">
+  <p>Pay to finish the operation:</p>
+  <a href="lightning:{invoice}"><QR value="{invoice}"/></a>
+  <div class="wrap">{invoice}</div>
+  <button class="cancel" on:click="{dispatchCancel}">Cancel</button>
+</div>

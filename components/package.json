@@ -1,7 +1,8 @@
 {
 	"dependencies": {
+		"etleneum": "link:/home/fiatjaf/comp/etleneum-client/",
 		"promise-window": "^1.2.1",
-		"svelte-kjua": "^1.0.2",
+		"svelte-kjua": "^1.1.0",
 		"toastify-js": "^1.6.2"
 	}
 }
