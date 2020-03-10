@@ -3,7 +3,7 @@
 <script>
   import {onMount, getContext} from 'svelte'
   import {readable} from 'svelte/store'
-  import QR from 'svelte-kjua'
+  import PayToCall from '../../components/PayToCall.html'
 
   import * as toast from '../../components/toast'
   import {makeSnippet} from './widget'
@@ -68,26 +68,31 @@
     try {
       call = await contract.prepareCall('queue_ad', msatoshi, data)
 
-      let stop = contract.stream(
+      call.stop = contract.stream(
         id => {
           if (id === call.id) {
             toast.success('Success!')
             call = null
             satoshis = 0
-            setTimeout(stop, 1)
+            setTimeout(call.stop, 1)
             loadBanner()
           }
         },
         (id, err) => {
           if (id === call.id) {
             toast.warning('Error: ' + err.message)
-            setTimeout(stop, 1)
+            setTimeout(call.stop, 1)
           }
         }
       )
     } catch (err) {
       toast.warning(`Failed to queue ad: ${err}`)
     }
+  }
+
+  function cancel() {
+    call.stop()
+    call = null
   }
 </script>
 
@@ -169,9 +174,7 @@
 <section>
   <b>Queue an ad:</b>
   {#if call}
-  <p>Pay to finish the operation:</p>
-  <a href="lightning:{call.invoice}"><QR value="{call.invoice}"/></a>
-  <div class="wrap">{call.invoice}</div>
+  <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
   {:else}
   <form on:submit="{queueAd}">
     <label>Link: <input name="link" type="url"/></label>

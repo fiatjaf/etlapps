@@ -3,18 +3,13 @@
 <script>
   import {getContext} from 'svelte'
   import {Account} from 'etleneum'
-  import {readable} from 'svelte/store'
-  import QR from 'svelte-kjua'
+  import PayToCall from '../../components/PayToCall.html'
 
   import * as toast from '../../components/toast'
   import Auth from '../../components/Auth.html'
+  import account from '../../components/etleneumAccountStore'
 
   const contract = getContext('contract')
-
-  const etleneumAccount = Account()
-  const account = readable(etleneumAccount, set =>
-    etleneumAccount.subscribe(set)
-  )
 
   var accountBanners = []
   var call
@@ -47,25 +42,30 @@
         $account.session
       )
 
-      let stop = contract.stream(
+      call.stop = contract.stream(
         id => {
           if (id === call.id) {
             toast.success('Success!')
             call = null
-            setTimeout(stop, 1)
+            setTimeout(call.stop, 1)
             loadBanners()
           }
         },
         (id, err) => {
           if (id === call.id) {
             toast.warning('Error: ' + err.message)
-            setTimeout(stop, 1)
+            setTimeout(call.stop, 1)
           }
         }
       )
     } catch (err) {
       toast.warning(`Failed to add banner: ${err}`)
     }
+  }
+
+  function cancel() {
+    call.stop()
+    call = null
   }
 </script>
 
@@ -81,7 +81,7 @@
 </style>
 
 <section>
-  <div id="auth"><Auth account="{etleneumAccount}" /></div>
+  <div id="auth"><Auth /></div>
 </section>
 {#if accountBanners.length > 0}
 <section>
@@ -100,9 +100,7 @@
 <section>
   {#if call}
   <div>
-    <p>Pay to finish the operation:</p>
-    <a href="lightning:{call.invoice}"><QR value="{call.invoice}"/></a>
-    <div class="wrap">{call.invoice}</div>
+    <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
   </div>
   {:else} {#if $account.id}
   <h3>Add a new banner</h3>
