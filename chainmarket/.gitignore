@@ -6,3 +6,4 @@ static/*bundle*
 .netlify
 *.debug
 *.log
+static/global.css
