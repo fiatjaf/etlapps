@@ -1,0 +1,357 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+  import {loadCall} from 'etleneum'
+
+  import account from '../../components/etleneumAccountStore'
+  import * as toast from '../../components/toast'
+  import PayToCall from '../../components/PayToCall.html'
+
+  const contract = getContext('contract')
+
+  onMount(loadOffers)
+  onMount(startListening)
+  onMount(loadCalls)
+
+  var offers = {}
+  var calls = []
+  var creating = {}
+  var txid = null
+  var to_reserve = {}
+  var fee5blocks = 14
+  var call
+
+  $: to_reserve_list = Object.keys(to_reserve).filter(addr => to_reserve[addr])
+  $: to_reserve_fees =
+    to_reserve_list
+      .map(addr => offers[addr].fee_msat)
+      .reduce((a, b) => a + b, 0) / 1000
+  $: to_reserve_mining_fee = 190 + 34 * (1 + to_reserve_list.length)
+
+  async function loadOffers() {
+    try {
+      let state = await contract.state()
+      offers = Object.keys(state)
+        .map(addr => ({...state[addr], addr}))
+        .sort((a, b) => a.fee_msat - b.fee_msat)
+    } catch (err) {
+      toast.error(`Failed to load open offers: ${err}`)
+    }
+  }
+
+  async function loadCalls() {
+    try {
+      calls = await contract.calls()
+    } catch (err) {
+      toast.error(`Failed to load last calls: ${err}`)
+    }
+  }
+
+  function startListening() {
+    contract.stream(
+      async id => {
+        loadOffers()
+
+        let newCall = await loadCall(id)
+        calls.unshift(newCall)
+
+        if (call.id === id) {
+          call = null
+        }
+
+        switch (call.method) {
+          case 'queuepay':
+            if (call.id === id) {
+              toast.info(`Your offer has been posted.`)
+              creating = {}
+            } else {
+              toast.info(`New transaction offer to ${newCall.payload.addr}!`)
+            }
+            break
+          case 'reserve':
+            if (call.id === id) {
+              toast.info(
+                `Addresses [${call.payload.addresses.join(
+                  ' '
+                )}] are now reserved to you for 6 blocks.`
+              )
+              to_reserve = {}
+            } else {
+              toast.info(
+                `Someone has reserved addresses [${call.payload.addresses.join(
+                  ' '
+                )}].`
+              )
+            }
+            break
+          case 'txsent':
+            if (call.id === id) {
+              toast.info(`Your transaction has been accepted!`)
+              txid = null
+            } else {
+              toast.info(`New transaction sent!`)
+            }
+            break
+        }
+      },
+      (id, err) => {
+        if (call.id === id) {
+          toast.warning(`Your call failed: ${err.message}`)
+        } else {
+          toast.warning(`A call resulted in error: ${err.message}`)
+        }
+      }
+    )
+  }
+
+  async function queuepay(e) {
+    e.preventDefault()
+
+    let {target_sat, fee_sat, addr} = creating
+    let total_sat = target_sat + fee_sat
+
+    try {
+      call = await contract.prepareCall('queuepay', total_sat * 1000, {
+        fee_msat: fee_sat * 1000,
+        addr
+      })
+    } catch (err) {
+      toast.warning(`Failed to prepare call: ${err}`)
+    }
+  }
+
+  async function reserve(e) {
+    e.preventDefault()
+
+    try {
+      call = await contract.prepareCall(
+        'reserve',
+        to_reserve_list.length * 100000,
+        {addresses: to_reserve_list},
+        $account.session
+      )
+    } catch (err) {
+      toast.warning(`Failed to prepare call: ${err}`)
+    }
+  }
+
+  async function txsent(e) {
+    e.preventDefault()
+
+    try {
+      call = await contract.prepareCall('txsent', 0, {txid}, $account.session)
+    } catch (err) {
+      toast.warning(`Failed to prepare call: ${err}`)
+    }
+  }
+
+  async function loadFees() {
+    try {
+      let feerates = await (
+        await fetch('https://blockstream.info/api/fee-estimates')
+      ).json()
+      fee5blocks = feerates['5']
+    } catch (err) {
+      toast.warning(`Failed to estimate fees: ${err}`)
+    }
+  }
+
+  function cancel() {
+    call = null
+  }
+
+  function scrollToLogin(e) {
+    e.preventDefault()
+    document.getElementById('login').scrollIntoView()
+  }
+</script>
+
+<style>
+  #offers tr:not(.to_reserve) {
+    opacity: 0.8;
+  }
+  #offers tr:not(.to_reserve):hover {
+    opacity: 1;
+  }
+  #offers tr.to_reserve {
+    background: var(--background-secondary);
+  }
+
+  #queue {
+  }
+  #queue label {
+    display: block;
+    margin: 3px 0;
+  }
+  #queue input[type='text'] {
+    width: 57%;
+  }
+  #queue input[type='number'] {
+    width: 100px;
+  }
+
+  #reservation {
+  }
+  #reservation table td {
+    padding: 0 4px;
+  }
+  #reservation table td:first-child {
+    text-align: right;
+  }
+</style>
+
+<div>
+  {#if call}
+  <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
+  {:else}
+  <h2>
+    Queue a payment
+    <span
+      data-wenk="Your payment will be pending until someone decides to fulfill it: which means to send a transaction with exact amounts to the onchain address and take the sats."
+      data-wenk-length="large"
+      >&#x1f6c8;</span
+    >
+  </h2>
+  <form id="queue" on:submit="{queuepay}">
+    <label>
+      Bitcoin address: <input type="text" bind:value="{creating.addr}" />
+    </label>
+    <label>
+      Amount to send (sat):
+      <input
+        step="1"
+        min="1"
+        type="number"
+        bind:value="{creating.target_sat}"
+      />
+    </label>
+    <label>
+      Fee to include (sat):
+      <input step="1" type="number" bind:value="{creating.fee_sat}" />
+    </label>
+    <button>Post</button>
+  </form>
+
+  <div>
+    {#if offers.length}
+    <h2>
+      Open offers
+      <span
+        data-wenk="These are funded offers waiting for someone to fulfill onchain and earn the fees. Select the ones you intend to fulfill."
+        data-wenk-length="large"
+        >&#x1f6c8;</span
+      >
+    </h2>
+    <table id="offers">
+      <thead>
+        <tr>
+          <th>reserve</th>
+          <th>fee</th>
+          <th>addr</th>
+          <th>amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each offers as offer (offer.addr)}
+        <tr class:to_reserve="{to_reserve[offer.addr]}">
+          <td>
+            <input
+              id="offer-{offer.addr}"
+              type="checkbox"
+              bind:checked="{to_reserve[offer.addr]}"
+            />
+          </td>
+          <td>
+            <label for="offer-{offer.addr}">
+              {(offer.fee_msat / 1000).toFixed(3)}
+            </label>
+          </td>
+          <td>
+            <label for="offer-{offer.addr}">
+              {offer.addr}
+            </label>
+          </td>
+          <td>
+            <label for="offer-{offer.addr}">
+              {offer.sat}
+            </label>
+          </td>
+        </tr>
+        {/each}
+      </tbody>
+    </table>
+    {/if}
+  </div>
+
+  <div>
+    {#if to_reserve_list.length}
+    <h2>
+      Reserve checked offers
+      <span
+        data-wenk="After reserving, you'll have 6 blocks of guaranteed priority in fulfilling these onchain. Send a batched transaction paying exact amounts to each of the reserved addresses, then after it's confirmed come back here and notify the transaction id in the form below."
+        data-wenk-length="large"
+        >&#x1f6c8;</span
+      >
+    </h2>
+    <form id="reservation" on:submit="{reserve}">
+      <table>
+        <tr>
+          <td>Satoshis to send:</td>
+          <td>
+            {to_reserve_list.map(addr => offers[addr].sat).reduce((a, b) => a +
+            b, 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Fees to earn:</td>
+          <td>
+            {to_reserve_fees.toFixed(3)}
+          </td>
+        </tr>
+        <tr>
+          <td>Roughly estimated mining fee (for 1 input):</td>
+          <td>{to_reserve_mining_fee}</td>
+        </tr>
+        <tr>
+          <td>Estimated profit:</td>
+          <td>
+            {(to_reserve_fees - to_reserve_mining_fee).toFixed(3)}
+          </td>
+        </tr>
+        <tr>
+          <td>Satoshis to stake:</td>
+          <td>{to_reserve_list.length * 100}</td>
+        </tr>
+      </table>
+
+      {#if $account.id}
+      <button>Reserve</button>
+      {:else}
+      <button on:click="{scrollToLogin}">
+        Login first to be able to notify
+      </button>
+      {/if}
+    </form>
+    {/if}
+  </div>
+
+  <h2>
+    Notify the transaction was sent
+    <span
+      data-wenk="After sending the transaction that fulfills the reserved offers and seeing it confirmed, you must send the transaction id here, otherwise you'll lose everything. There's no recourse."
+      data-wenk-length="large"
+      >&#x1f6c8;</span
+    >
+  </h2>
+  <form id="notify" on:submit="{txsent}">
+    <label> Transaction ID: <input bind:value="{txid}" /> </label>
+    {#if $account.id}
+    <button>Notify</button>
+    {:else}
+    <button on:click="{scrollToLogin}">Login first to be able to notify</button>
+    {/if}
+  </form>
+
+  {/if}
+</div>

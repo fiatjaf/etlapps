@@ -1,0 +1,58 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+
+  import account from '../../components/etleneumAccountStore'
+
+  const contract = getContext('contract')
+
+  onMount(() => {
+    account.subscribe(loadRelevantOffers)
+  })
+
+  var offers
+
+  async function loadRelevantOffers() {
+    offers = await contract.state(
+      `
+      def bounty: . | to_entries | map(.value) | add;
+      def offer: . | {head, needed, created_at, bounty: (.bounty | bounty), ncompletions: (.completions | length), nvoters: (.voters | length)};
+
+      .
+      | {open: (.open | del(._)), closed: (.closed | del(._))}
+      | { offers:
+          ( .open | to_entries | map(.value)
+          | map(select(.voters | contains(["${$account.id}"])))
+          | map(offer)
+          )
+        , completions:
+          ( .open | to_entries | map(.value)
+          | map(select(.completions.${$account.id} != null))
+          | map(offer + {completion: (.completions.${$account.id})})
+          )
+        , contributions:
+          ( .open | to_entries | map(.value)
+          | map(select(.bounty.${$account.id} != null))
+          | map(offer + {contribution: (.bounty.${$account.id})})
+          )
+        , closed: 
+          ( .closed | to_entries | map(.value)
+          | map
+            ( select
+              (  .voters | contains(["${$account.id}"])
+              or .completions.${$account.id} != null
+              or .bounty.${$account.id} != null
+              )
+            )
+          )
+        }`
+    )
+  }
+</script>
+
+<style></style>
+
+{#if offers}
+<pre><code>{JSON.stringify(offers, null, 2)}</code></pre>
+{/if}
