@@ -27,7 +27,8 @@
     to_reserve_list
       .map(addr => offers[addr].fee_msat)
       .reduce((a, b) => a + b, 0) / 1000
-  $: to_reserve_mining_fee = 190 + 34 * (1 + to_reserve_list.length)
+  $: to_reserve_mining_fee =
+    fee5blocks * (190 + 34 * (1 + to_reserve_list.length))
 
   async function loadOffers() {
     try {
