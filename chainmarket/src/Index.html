@@ -12,16 +12,18 @@
 
   onMount(loadOffers)
   onMount(startListening)
-  onMount(loadCalls)
+  onMount(loadFees)
 
   var offers = {}
-  var calls = []
   var creating = {}
   var txid = null
   var to_reserve = {}
   var fee5blocks = 14
   var call
 
+  $: offers_list = Object.keys(offers)
+    .map(addr => ({...offers[addr], addr}))
+    .sort((a, b) => a.fee_msat - b.fee_msat)
   $: to_reserve_list = Object.keys(to_reserve).filter(addr => to_reserve[addr])
   $: to_reserve_fees =
     to_reserve_list
@@ -32,20 +34,9 @@
 
   async function loadOffers() {
     try {
-      let state = await contract.state()
-      offers = Object.keys(state)
-        .map(addr => ({...state[addr], addr}))
-        .sort((a, b) => a.fee_msat - b.fee_msat)
+      offers = await contract.state()
     } catch (err) {
       toast.error(`Failed to load open offers: ${err}`)
-    }
-  }
-
-  async function loadCalls() {
-    try {
-      calls = await contract.calls()
-    } catch (err) {
-      toast.error(`Failed to load last calls: ${err}`)
     }
   }
 
@@ -55,12 +46,6 @@
         loadOffers()
 
         let newCall = await loadCall(id)
-        calls.unshift(newCall)
-
-        if (call.id === id) {
-          call = null
-        }
-
         switch (call.method) {
           case 'queuepay':
             if (call.id === id) {
@@ -73,14 +58,14 @@
           case 'reserve':
             if (call.id === id) {
               toast.info(
-                `Addresses [${call.payload.addresses.join(
+                `Addresses [${newCall.payload.addresses.join(
                   ' '
                 )}] are now reserved to you for 6 blocks.`
               )
               to_reserve = {}
             } else {
               toast.info(
-                `Someone has reserved addresses [${call.payload.addresses.join(
+                `Someone has reserved addresses [${newCall.payload.addresses.join(
                   ' '
                 )}].`
               )
@@ -94,6 +79,10 @@
               toast.info(`New transaction sent!`)
             }
             break
+        }
+
+        if (call.id === id) {
+          call = null
         }
       },
       (id, err) => {
@@ -169,6 +158,9 @@
 </script>
 
 <style>
+  #offers {
+    width: 100%;
+  }
   #offers tr:not(.to_reserve) {
     opacity: 0.8;
   }
@@ -177,6 +169,23 @@
   }
   #offers tr.to_reserve {
     background: var(--background-secondary);
+  }
+  #offers tr.fee_too_low {
+    background: var(--emphasis-rare);
+    opacity: 0.7;
+  }
+  #offers tr.reserved {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  #offers tr.reserved td {
+    cursor: pointer;
+  }
+  #offers td {
+    padding: 4px 7px;
+    cursor: pointer;
+    text-align: center;
+    cursor: pointer;
   }
 
   #queue {
@@ -194,10 +203,10 @@
 
   #reservation {
   }
-  #reservation table td {
-    padding: 0 4px;
+  #reservation td {
+    padding: 0 8px;
   }
-  #reservation table td:first-child {
+  #reservation td:nth-child(1) {
     text-align: right;
   }
 </style>
@@ -235,7 +244,7 @@
   </form>
 
   <div>
-    {#if offers.length}
+    {#if offers_list.length}
     <h2>
       Open offers
       <span
@@ -254,14 +263,27 @@
         </tr>
       </thead>
       <tbody>
-        {#each offers as offer (offer.addr)}
-        <tr class:to_reserve="{to_reserve[offer.addr]}">
+        {#each offers_list as offer (offer.addr)}
+        <tr
+          class:to_reserve="{to_reserve[offer.addr]}"
+          class:fee_too_low="{!offer.reserved && offer.fee_msat / 1000 < 34 * fee5blocks}"
+          class:reserved="{offer.reserved}"
+        >
           <td>
+            {#if offer.reserved}
+            <span
+              data-wenk="Reserved to {offer.reserved.to} until block {offer.reserved.upto}"
+              data-wenk-pos="right"
+            >
+              🔒 <small>{offer.reserved.upto}</small>
+            </span>
+            {:else}
             <input
               id="offer-{offer.addr}"
               type="checkbox"
               bind:checked="{to_reserve[offer.addr]}"
             />
+            {/if}
           </td>
           <td>
             <label for="offer-{offer.addr}">
@@ -300,29 +322,33 @@
         <tr>
           <td>Satoshis to send:</td>
           <td>
-            {to_reserve_list.map(addr => offers[addr].sat).reduce((a, b) => a +
-            b, 0)}
+            <b
+              >{to_reserve_list.map(addr => offers[addr].sat).reduce((a, b) => a
+              + b, 0)}</b
+            >
           </td>
         </tr>
         <tr>
           <td>Fees to earn:</td>
           <td>
-            {to_reserve_fees.toFixed(3)}
+            <b>{to_reserve_fees.toFixed(3)}</b>
           </td>
         </tr>
         <tr>
           <td>Roughly estimated mining fee (for 1 input):</td>
-          <td>{to_reserve_mining_fee}</td>
+          <td>
+            <b>{to_reserve_mining_fee.toFixed(0)}</b> (at {fee5blocks}sat/vb)
+          </td>
         </tr>
         <tr>
           <td>Estimated profit:</td>
           <td>
-            {(to_reserve_fees - to_reserve_mining_fee).toFixed(3)}
+            <b>{(to_reserve_fees - to_reserve_mining_fee).toFixed(3)}</b>
           </td>
         </tr>
         <tr>
           <td>Satoshis to stake:</td>
-          <td>{to_reserve_list.length * 100}</td>
+          <td><b>{to_reserve_list.length * 100}</b></td>
         </tr>
       </table>
 
