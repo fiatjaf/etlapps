@@ -159,7 +159,7 @@
   {#if $store.balance}
   <a class="qr" href="lightning:{$store.lnurl.withdraw}">
     <QR value="{$store.lnurl.withdraw}" size="{qrsize/2}" />
-    Withdraw {$store.balance}sat
+    Withdraw {$store.balance/1000}sat
   </a>
   {/if} {/if}
 </div>
