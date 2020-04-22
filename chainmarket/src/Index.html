@@ -245,14 +245,28 @@
 
   <div>
     {#if offers_list.length}
-    <h2>
-      Open offers
-      <span
-        data-wenk="These are funded offers waiting for someone to fulfill onchain and earn the fees. Select the ones you intend to fulfill."
-        data-wenk-length="large"
-        >&#x1f6c8;</span
-      >
-    </h2>
+    <div
+      style="display: flex; justify-content: space-between; align-items: center;"
+    >
+      <h2>
+        Open offers
+        <span
+          data-wenk="These are funded offers waiting for someone to fulfill onchain and earn the fees. Select the ones you intend to fulfill."
+          data-wenk-length="large"
+          >&#x1f6c8;</span
+        >
+      </h2>
+      <label style="display: flex; align-items: center;">
+        <input
+          min="1"
+          max="100"
+          step="1"
+          bind:value="{fee5blocks}"
+          type="range"
+        />
+        <span style="width: 105px">fee: {fee5blocks} sat/vb</span>
+      </label>
+    </div>
     <table id="offers">
       <thead>
         <tr>
