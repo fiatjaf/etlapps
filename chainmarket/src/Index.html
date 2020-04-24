@@ -46,17 +46,20 @@
         loadOffers()
 
         let newCall = await loadCall(id)
-        switch (call.method) {
+        console.log('got call notification', newCall)
+        switch (newCall.method) {
           case 'queuepay':
-            if (call.id === id) {
+            if (call && call.id === id) {
+              console.log('your fofer')
               toast.info(`Your offer has been posted.`)
               creating = {}
             } else {
+              console.log('nw tc')
               toast.info(`New transaction offer to ${newCall.payload.addr}!`)
             }
             break
           case 'reserve':
-            if (call.id === id) {
+            if (call && call.id === id) {
               toast.info(
                 `Addresses [${newCall.payload.addresses.join(
                   ' '
@@ -72,7 +75,7 @@
             }
             break
           case 'txsent':
-            if (call.id === id) {
+            if (call && call.id === id) {
               toast.info(`Your transaction has been accepted!`)
               txid = null
             } else {
@@ -81,15 +84,15 @@
             break
         }
 
-        if (call.id === id) {
+        if (call && call.id === id) {
           call = null
         }
       },
-      (id, err) => {
-        if (call.id === id) {
-          toast.warning(`Your call failed: ${err.message}`)
+      (id, errMessage) => {
+        if (call && call.id === id) {
+          toast.warning(`Your call failed: ${errMessage}`)
         } else {
-          toast.warning(`A call resulted in error: ${err.message}`)
+          toast.warning(`A call from someone else failed: ${errMessage}`)
         }
       }
     )
