@@ -12,25 +12,36 @@
 
   onMount(loadOffers)
   onMount(startListening)
-  onMount(loadFees)
+  onMount(getBlockchainTip)
 
   var offers = {}
   var creating = {}
   var txid = null
   var to_reserve = {}
-  var fee5blocks = 14
+  var feerate = 1
   var call
+  var tip = 1
 
   $: offers_list = Object.keys(offers)
     .map(addr => ({...offers[addr], addr}))
+    .map(offer => ({
+      ...offer,
+      reserved:
+        offer.reserved && offer.reserved.upto > tip ? offer.reserved : null
+    }))
     .sort((a, b) => a.fee_msat - b.fee_msat)
   $: to_reserve_list = Object.keys(to_reserve).filter(addr => to_reserve[addr])
   $: to_reserve_fees =
     to_reserve_list
       .map(addr => offers[addr].fee_msat)
       .reduce((a, b) => a + b, 0) / 1000
-  $: to_reserve_mining_fee =
-    fee5blocks * (190 + 34 * (1 + to_reserve_list.length))
+  $: to_reserve_mining_fee = to_reserve_list.length
+    ? (to_reserve_mining_fee =
+        feerate * (190 + 34 * (1 + to_reserve_list.length)))
+    : 0
+  $: reserved_to_me_list = offers_list.filter(
+    ({reserved}) => account.id && reserved && reserved.to === account.id
+  )
 
   async function loadOffers() {
     try {
@@ -139,19 +150,18 @@
     }
   }
 
-  async function loadFees() {
-    try {
-      let feerates = await (
-        await fetch('https://blockstream.info/api/fee-estimates')
-      ).json()
-      fee5blocks = feerates['5']
-    } catch (err) {
-      toast.warning(`Failed to estimate fees: ${err}`)
-    }
-  }
-
   function cancel() {
     call = null
+  }
+
+  async function getBlockchainTip() {
+    try {
+      tip = await (
+        await fetch('https://blockstream.info/api/blocks/tip/height')
+      ).json()
+    } catch (err) {
+      toast.warning(`Failed to load blockchain tip: ${err}`)
+    }
   }
 
   function scrollToLogin(e) {
@@ -161,6 +171,19 @@
 </script>
 
 <style>
+  .role {
+    font-family: monospace;
+    font-size: 90%;
+    opacity: 0.7;
+  }
+  .role.taker {
+    color: #074dff;
+  }
+  .role.maker {
+    color: #ffce2f;
+    text-shadow: white 1px 1px 3px;
+  }
+
   #offers {
     width: 100%;
   }
@@ -181,14 +204,12 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
-  #offers tr.reserved td {
-    cursor: pointer;
+  #offers tr * {
+    cursor: inherit;
   }
   #offers td {
     padding: 4px 7px;
-    cursor: pointer;
     text-align: center;
-    cursor: pointer;
   }
 
   #queue {
@@ -212,6 +233,12 @@
   #reservation td:nth-child(1) {
     text-align: right;
   }
+  #reservation .profit {
+    color: var(--emphasis);
+  }
+  #reservation .loss {
+    color: var(--emphasis-rare);
+  }
 </style>
 
 <div>
@@ -219,7 +246,34 @@
   <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
   {:else}
   <h2>
-    Queue a payment
+    How it works, in short
+  </h2>
+  <ol>
+    <li>
+      Multiple people submit Lightning transactions naming onchain addresses and
+      specific amounts they want to pay, these submissions stand floating as
+      pending offers
+    </li>
+    <li>
+      Someone sends an onchain transaction fulfilling all pending offers and
+      gets the money that was parked on ChainMarket
+    </li>
+  </ol>
+  <img
+    src="/scheme.png"
+    alt="~"
+    style="width: 80%; display: block; margin: auto;"
+  />
+  <p>
+    Before making transactions, please make sure to read about the details by
+    hovering the 🛈 icons below and examining the
+    <a href="https://etleneum.com/#/contract/c8w0c13v75"
+      >description and code</a
+    >
+    that powers this automated market.
+  </p>
+  <h2>
+    <span class="role maker">[ maker ]</span> Queue a payment
     <span
       data-wenk="Your payment will be pending until someone decides to fulfill it: which means to send a transaction with exact amounts to the onchain address and take the sats."
       data-wenk-length="large"
@@ -252,22 +306,17 @@
       style="display: flex; justify-content: space-between; align-items: center;"
     >
       <h2>
+        <span class="role taker">[ taker ]</span>
         Open offers
         <span
-          data-wenk="These are funded offers waiting for someone to fulfill onchain and earn the fees. Select the ones you intend to fulfill."
+          data-wenk="These are funded offers waiting for someone to fulfill onchain and earn the fees. Select the ones you intend to fulfill and proceed to reserve them before actually broadcasting the transaction."
           data-wenk-length="large"
           >&#x1f6c8;</span
         >
       </h2>
       <label style="display: flex; align-items: center;">
-        <input
-          min="1"
-          max="100"
-          step="1"
-          bind:value="{fee5blocks}"
-          type="range"
-        />
-        <span style="width: 105px">fee: {fee5blocks} sat/vb</span>
+        <input min="1" max="100" step="1" bind:value="{feerate}" type="range" />
+        <span style="width: 105px">fee: {feerate} sat/vb</span>
       </label>
     </div>
     <table id="offers">
@@ -283,8 +332,8 @@
         {#each offers_list as offer (offer.addr)}
         <tr
           class:to_reserve="{to_reserve[offer.addr]}"
-          class:fee_too_low="{!offer.reserved && offer.fee_msat / 1000 < 34 * fee5blocks}"
-          class:reserved="{offer.reserved}"
+          class:fee_too_low="{!offer.reserved && !offer.waiting && offer.fee_msat / 1000 < 34 * feerate}"
+          class:reserved="{offer.reserved || offer.waiting}"
         >
           <td>
             {#if offer.reserved}
@@ -293,6 +342,13 @@
               data-wenk-pos="right"
             >
               🔒 <small>{offer.reserved.upto}</small>
+            </span>
+            {:else if offer.waiting}
+            <span
+              data-wenk="Waiting for a transaction to confirm."
+              data-wenk-pos="right"
+            >
+              &#8987;
             </span>
             {:else}
             <input
@@ -325,11 +381,11 @@
   </div>
 
   <div>
-    {#if to_reserve_list.length}
     <h2>
+      <span class="role taker">[ taker ]</span>
       Reserve checked offers
       <span
-        data-wenk="After reserving, you'll have 6 blocks of guaranteed priority in fulfilling these onchain. Send a batched transaction paying exact amounts to each of the reserved addresses, then after it's confirmed come back here and notify the transaction id in the form below."
+        data-wenk="After reserving, you'll have 6 blocks of guaranteed priority in fulfilling these onchain. Send a batched transaction paying exact amounts to each of the reserved addresses, then come back here immediately and notify this app with transaction id using the form below."
         data-wenk-length="large"
         >&#x1f6c8;</span
       >
@@ -354,13 +410,17 @@
         <tr>
           <td>Roughly estimated mining fee (for 1 input):</td>
           <td>
-            <b>{to_reserve_mining_fee.toFixed(0)}</b> (at {fee5blocks}sat/vb)
+            <b>{to_reserve_mining_fee.toFixed(0)}</b> (at {feerate}sat/vb)
           </td>
         </tr>
         <tr>
           <td>Estimated profit:</td>
           <td>
-            <b>{(to_reserve_fees - to_reserve_mining_fee).toFixed(3)}</b>
+            <b
+              class:profit="{to_reserve_fees - to_reserve_mining_fee > 0}"
+              class:loss="{to_reserve_fees - to_reserve_mining_fee < 0}"
+              >{(to_reserve_fees - to_reserve_mining_fee).toFixed(3)}</b
+            >
           </td>
         </tr>
         <tr>
@@ -368,6 +428,24 @@
           <td><b>{to_reserve_list.length * 100}</b></td>
         </tr>
       </table>
+
+      <div>
+        {#if reserved_to_me_list.length}
+        <b>
+          You must publish a transaction containing the following outputs at
+          least:
+        </b>
+        <table>
+          {#each reserved_to_me_list as offer}
+          <tr>
+            <td>{offer.addr}</td>
+            <td>{offer.sat}</td>
+          </tr>
+          {/each}
+        </table>
+
+        {/if}
+      </div>
 
       {#if $account.id}
       <button>Reserve</button>
@@ -377,17 +455,27 @@
       </button>
       {/if}
     </form>
-    {/if}
   </div>
 
   <h2>
-    Notify the transaction was sent
+    <span class="role taker">[ taker ]</span>
+    Notify a transaction was broadcasted
     <span
-      data-wenk="After sending the transaction that fulfills the reserved offers and seeing it confirmed, you must send the transaction id here, otherwise you'll lose everything. There's no recourse."
+      data-wenk="After sending the transaction that fulfills the reserved offers, you must send the transaction id here, otherwise you'll lose everything. There's no recourse. The offers will be reserved to you until the transaction is confirmed on the blockchain (in which case you'll receive the sats in your account) or it is not in the mempool anymore."
       data-wenk-length="large"
       >&#x1f6c8;</span
     >
   </h2>
+  <p>
+    Wallets that support sending to multiple addresses in the same transaction:
+    <a href="https://electrum.org" target="_blank">Electrum</a>,
+    <a href="https://github.com/LightningNetwork/lnd" target="_blank">lnd</a>,
+    <a href="https://bluewallet.io" target="_blank">BlueWallet</a>,
+    <a href="https://github.com/ElementsProject/lightning/" target="_blank"
+      >c-lightning</a
+    >, <a href="https://bitcoincore.org/" target="_blank">Bitcoin Core</a>,
+    <a href="https://samouraiwallet.com/" target="_blank">Samourai</a>.
+  </p>
   <form id="notify" on:submit="{txsent}">
     <label> Transaction ID: <input bind:value="{txid}" /> </label>
     {#if $account.id}

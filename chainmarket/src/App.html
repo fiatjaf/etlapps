@@ -2,7 +2,6 @@
 
 <script>
   import {setContext} from 'svelte'
-  import Router from 'svelte-spa-router'
   import {Contract} from 'etleneum'
 
   import Index from './Index.html'
@@ -10,10 +9,6 @@
   import Auth from '../../components/Auth.html'
 
   const CONTRACT = 'c8w0c13v75'
-
-  const routes = {
-    '/': Index
-  }
 
   setContext('contract', Contract(CONTRACT))
 </script>
@@ -28,7 +23,7 @@
     align-items: center;
   }
   header > h1 {
-    flex-grow: 2;
+    flex-grow: 99999999;
     font-size: 4rem;
   }
   header > h1 a {
@@ -39,6 +34,10 @@
     font-weight: normal;
     font-family: monospace;
     font-size: 16px;
+  }
+  header > p {
+    flex-shrink: 99999999;
+    margin-left: 23px;
   }
   footer {
     width: 100%;
@@ -54,8 +53,11 @@
       <img alt="logo" style="height: 1em;" src="chain.png" />
       <a href="#/">ChainMarket</a>
     </h1>
+    <p>
+      A Lightning to onchain swap market with batched transactions
+    </p>
   </header>
-  <Router {routes} />
+  <Index />
   <div id="login">
     <Auth qrsize="300" />
   </div>
