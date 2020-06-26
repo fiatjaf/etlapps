@@ -15,10 +15,13 @@ export function makeSnippet(bannerId, width, height) {
   position: relative;
 }
 #banner-ad,
-#banner-ad > a,
-#banner-ad > a > img {
+#banner-ad > a {
   width: ${width}px;
   height: ${height}px;
+}
+#banner-ad > a > img {
+  width: 100%;
+  height: 100%;
 }
 #banner-ad > a > a {
   text-decoration: none;
@@ -49,7 +52,7 @@ fetch(
 
     if (!ad) {
       a.href = "https://banners.etleneum.com/#/${bannerId}"
-      a.innerHTML = placeholder
+      a.innerHTML = '' // placeholder
       return
     }
 
