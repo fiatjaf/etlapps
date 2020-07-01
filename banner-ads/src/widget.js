@@ -2,9 +2,9 @@
 
 export function makeSnippet(bannerId, width, height) {
   return `
-<div id="banner-ad">
+<div id="etlwidgetb">
 <style>
-#banner-ad > a {
+#etlwidgetb > a {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,16 +14,16 @@ export function makeSnippet(bannerId, width, height) {
   text-decoration: none;
   position: relative;
 }
-#banner-ad,
-#banner-ad > a {
+#etlwidgetb,
+#etlwidgetb > a {
   width: ${width}px;
   height: ${height}px;
 }
-#banner-ad > a > img {
+#etlwidgetb > a > img {
   width: 100%;
   height: 100%;
 }
-#banner-ad > a > a {
+#etlwidgetb > a > a {
   text-decoration: none;
   background-color: white;
   padding: 4px;
@@ -41,7 +41,7 @@ fetch(
 )
   .then(r => r.json())
   .then(({value: ad}) => {
-    let s = document.getElementById('banner-ad')
+    let s = document.getElementById('etlwidgetb')
     let a = document.createElement('a')
     let l = document.createElement('a')
     s.appendChild(a)
