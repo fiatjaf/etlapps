@@ -1,10 +1,12 @@
 /** @format */
 
 export function makeSnippet(bannerId, width, height) {
+  let cssId = 'b-' + parseInt(Math.random() * 0xffff)
+
   return `
-<div id="etlwidgetb">
+<div id="${cssId}">
 <style>
-#etlwidgetb > a {
+#${cssId} > a {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,16 +16,16 @@ export function makeSnippet(bannerId, width, height) {
   text-decoration: none;
   position: relative;
 }
-#etlwidgetb,
-#etlwidgetb > a {
+#${cssId},
+#${cssId} > a {
   width: ${width}px;
   height: ${height}px;
 }
-#etlwidgetb > a > img {
+#${cssId} > a > img {
   width: 100%;
   height: 100%;
 }
-#etlwidgetb > a > a {
+#${cssId} > a > a {
   text-decoration: none;
   background-color: white;
   padding: 4px;
@@ -41,7 +43,7 @@ fetch(
 )
   .then(r => r.json())
   .then(({value: ad}) => {
-    let s = document.getElementById('etlwidgetb')
+    let s = document.getElementById('${cssId}')
     let a = document.createElement('a')
     let l = document.createElement('a')
     s.appendChild(a)
