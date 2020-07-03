@@ -38,7 +38,17 @@
     state.set({challenge: challengeid, game: gameid})
   })
 
-  onMount(async () => {
+  onMount(loadChallenge)
+  onMount(loadGame)
+  onMount(() => {
+    let intv = setInterval(() => {
+      loadChallenge()
+      loadGame()
+    }, 30000)
+    return () => clearInterval(intv)
+  })
+
+  async function loadChallenge() {
     try {
       challenge = await contract.state(`.["${challengeid}"]`)
     } catch (err) {
@@ -59,9 +69,9 @@
         : null
 
     pending = !challenge.white || !challenge.black
-  })
+  }
 
-  onMount(async () => {
+  async function loadGame() {
     var res
     try {
       res = await (
@@ -85,7 +95,7 @@
         winner = 'black'
         break
     }
-  })
+  }
 
   function cancel() {
     call = null
@@ -147,7 +157,11 @@
 
 <div>
   {#if call}
-  <PayToCall color="#ffffff" invoice="{call.invoice}" on:cancel="{cancel}" />
+  <PayToCall
+    background="#ffffff"
+    invoice="{call.invoice}"
+    on:cancel="{cancel}"
+  />
   {:else}
   <div>
     <h2>
@@ -249,7 +263,7 @@
           Login to extract your satoshis from this game.
         </p>
         <div id="login">
-          <Auth color="#ffffff" qrsize="300" />
+          <Auth background="#ffffff" qrsize="300" />
         </div>
         {/if} {:else}
         <p>

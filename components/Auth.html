@@ -9,8 +9,9 @@
 
   const SEEDAUTH = window.SEEDAUTH || 'https://seed-auth.etleneum.com'
 
-  export let color = '#333'
   export let qrsize = 300
+  export let color = '#333'
+  export let background = 'transparent'
 
   var awaitingSeedAuth = false
   var popupBlocked = false
@@ -135,7 +136,10 @@
       >lnurl-auth</a
     >-powered wallet:
   </p>
-  <a class="qr" href="lightning:{$store.lnurl.auth}"
+  <a
+    class="qr"
+    href="lightning:{$store.lnurl.auth}"
+    style="background-color: {background}"
     >{#if $store.lnurl.auth}<QR
       value="{$store.lnurl.auth}"
       size="{qrsize}"
@@ -159,7 +163,11 @@
     >.
   </p>
   {#if $store.balance}
-  <a class="qr" href="lightning:{$store.lnurl.withdraw}">
+  <a
+    class="qr"
+    href="lightning:{$store.lnurl.withdraw}"
+    style="background-color: {background}"
+  >
     <QR value="{$store.lnurl.withdraw}" size="{qrsize/2}" color="{color}" />
     Withdraw balance: {$store.balance/1000}sat
   </a>

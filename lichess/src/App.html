@@ -12,7 +12,7 @@
   import * as toast from '../../common/toast'
   import Foot from '../../components/Footer.html'
 
-  const CONTRACT = 'cwwab319ao'
+  const CONTRACT = 'c4w191fezu'
 
   const contract = Contract(CONTRACT)
   setContext('contract', contract)
@@ -41,7 +41,9 @@
             // we've accepted a challenge
             toast.success(`You've accepted a challenge.`)
             push('/')
-            push(`/${gamedescriptor}`)
+            setTimeout(() => {
+              push(`/${gamedescriptor}`)
+            }, 500)
             break
           case 'extract':
             // we've extracted money

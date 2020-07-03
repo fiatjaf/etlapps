@@ -15,7 +15,7 @@
 
   var call
   var settings = {
-    msatoshi: 1000000,
+    satoshi: 1000,
     correspondence: false,
     initial: 10800,
     increment: 60,
@@ -24,12 +24,6 @@
 
   function randomColor() {
     return Math.random() < 0.5 ? 'black' : 'white'
-  }
-
-  function randomizeColor(e) {
-    e.preventDefault()
-    toast.info('Color randomized!', 2000)
-    settings.color = randomColor()
   }
 
   function cancel() {
@@ -43,11 +37,16 @@
     if (!settings.correspondence) {
       params.set('clock.limit', settings.initial)
       params.set('clock.increment', settings.increment)
+      params.set('variant', 'standard')
+      params.set(
+        'fen',
+        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+      )
     }
     let res = await (
       await fetch('https://lichess.org/api/challenge/open', {
         method: 'POST',
-        body: params.toString()
+        body: params
       })
     ).json()
 
@@ -59,14 +58,18 @@
       return st
     })
 
-    call = await contract.prepareCall('openchallenge', settings.msatoshi, {
-      challenge: challengeid,
-      gameid_hash: shajs('sha256')
-        .update(res.challenge.id)
-        .digest('hex'),
-      color: settings.color,
-      secret_hash: sha256(sha256(getBaseSecret() + ':' + challengeid))
-    })
+    call = await contract.prepareCall(
+      'openchallenge',
+      settings.satoshi * 1000,
+      {
+        challenge: challengeid,
+        gameid_hash: shajs('sha256')
+          .update(res.challenge.id)
+          .digest('hex'),
+        color: settings.color === 'randomize' ? randomColor() : settings.color,
+        secret_hash: sha256(sha256(getBaseSecret() + ':' + challengeid))
+      }
+    )
 
     state.update(st => {
       st.call = call.id
@@ -96,6 +99,7 @@
   label {
     display: block;
     margin: 0 4px;
+    text-align: center;
   }
   form > * {
     margin: 10px 0;
@@ -109,7 +113,11 @@
 
 <main>
   {#if call}
-  <PayToCall color="#ffffff" invoice="{call.invoice}" on:cancel="{cancel}" />
+  <PayToCall
+    background="#ffffff"
+    invoice="{call.invoice}"
+    on:cancel="{cancel}"
+  />
   {:else}
   <div>
     <iframe
@@ -122,15 +130,14 @@
   <form on:submit="{createChallenge}">
     <h3>Create a challenge</h3>
     <label>
-      Amount
+      Amount (satoshis)
       <input
-        type="range"
-        min="100000"
-        max="10000000"
-        step="1000"
-        bind:value="{settings.msatoshi}"
+        type="number"
+        min="100"
+        max="100000"
+        step="100"
+        bind:value="{settings.satoshi}"
       />
-      {parseInt(settings.msatoshi/1000)} sat
     </label>
     <div>
       <label>
@@ -183,9 +190,10 @@
         White
         <input type="radio" value="white" bind:group="{settings.color}" />
       </label>
-      <button on:click="{randomizeColor}" style="font-size: 75%">
+      <label>
         Randomize
-      </button>
+        <input type="radio" value="randomize" bind:group="{settings.color}" />
+      </label>
     </div>
     <button type="submit">Create</button>
   </form>

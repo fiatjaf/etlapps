@@ -7,7 +7,8 @@
   const dispatch = createEventDispatcher()
 
   export let invoice
-  export let color
+  export let color = '#333'
+  export let background = 'transparent'
 
   let hrp = invoice
     .split('1')
@@ -61,7 +62,9 @@
     >Why do I have to pay?</small
   >
   {/if}
-  <a href="lightning:{invoice}"><QR value="{invoice}" color="{color}"/></a>
+  <a href="lightning:{invoice}" style="background-color: {background}">
+    <QR value="{invoice}" color="{color}" />
+  </a>
   <div class="wrap">{invoice}</div>
   <button class="cancel" on:click="{dispatchCancel}">Cancel</button>
 </div>
