@@ -1,0 +1,268 @@
+<script>
+  import {onMount, getContext} from 'svelte'
+  import {loadCall} from 'etleneum'
+  import {replace} from 'svelte-spa-router'
+
+  import {sha256, getBaseSecret, capitalize, state} from './helpers'
+
+  import * as toast from '../../common/toast.js'
+  import account from '../../components/etleneumAccountStore'
+  import PayToCall from '../../components/PayToCall.html'
+  import Auth from '../../components/Auth.html'
+
+  const contract = getContext('contract')
+
+  export let params
+
+  var call
+  var challengeid
+  var gameid
+  var challenge
+  var winner = null
+  var ourside
+  var pending
+  var gamestarted
+
+  try {
+    let {c, g} = JSON.parse(atob(params.gamedescriptor))
+    challengeid = c
+    gameid = g
+  } catch (err) {
+    toast.warning('Challenge not found!')
+    replace('/')
+  }
+
+  let secret = sha256(getBaseSecret() + ':' + challengeid)
+
+  onMount(() => {
+    state.set({challenge: challengeid, game: gameid})
+  })
+
+  onMount(async () => {
+    try {
+      challenge = await contract.state(`.["${challengeid}"]`)
+    } catch (err) {
+      toast.error(`Failed to load challenge: ${err}`)
+      return
+    }
+
+    if (!challenge) {
+      toast.warning('Challenge not found!')
+      replace('/')
+    }
+
+    ourside =
+      challenge.white === sha256(secret)
+        ? 'white'
+        : challenge.black === sha256(secret)
+        ? 'black'
+        : null
+
+    pending = !challenge.white || !challenge.black
+  })
+
+  onMount(async () => {
+    var res
+    try {
+      res = await (
+        await fetch(
+          `https://lichess.org/game/export/${gameid}?moves=false&clocks=false&evals=false&opening=false&literate=false&pgnInJson=true`
+        )
+      ).text()
+    } catch (err) {
+      // game not started
+      return
+    }
+
+    gamestarted = true
+
+    let result = /\[Result "([^"]+)"\]/.exec(res)[1]
+    switch (result) {
+      case '1-0':
+        winner = 'white'
+        break
+      case '0-1':
+        winner = 'black'
+        break
+    }
+  })
+
+  function cancel() {
+    call = null
+  }
+
+  async function acceptChallenge(e) {
+    e.preventDefault()
+
+    call = await contract.prepareCall('acceptchallenge', challenge.msatoshi, {
+      challenge: challengeid,
+      gameid: gameid,
+      secret_hash: sha256(secret)
+    })
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+
+  async function extractSats(e) {
+    e.preventDefault()
+
+    call = await contract.prepareCall(
+      'extract',
+      0,
+      {
+        challenge: challengeid,
+        gameid: gameid,
+        secret: secret
+      },
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+</script>
+
+<style>
+  h2 {
+    text-align: center;
+  }
+  form {
+    margin: 20px 0;
+  }
+  #endgame {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  #endgame > * {
+    margin: 0 20px;
+  }
+</style>
+
+<div>
+  {#if call}
+  <PayToCall color="#ffffff" invoice="{call.invoice}" on:cancel="{cancel}" />
+  {:else}
+  <div>
+    <h2>
+      {#if ourside} Playing as <b>{ourside}</b>
+      {:else if !pending} Not playing this game {:else} Open challenge {/if}
+    </h2>
+
+    {#if pending}
+    <div>
+      {#if ourside}
+      <h3>This is an open challenge</h3>
+      <p>Now you must have a friend to play against. Follow these steps.</p>
+      <ol>
+        <li>
+          Open
+          <a href="https://lichess.org/{gameid}?color={ourside}" target="_blank"
+            >Lichess</a
+          >
+          on another tab and click to join the game.
+        </li>
+        <li>
+          Share <a href="{location.href}">this challenge page</a> with the
+          person you want to challenge.
+        </li>
+        <li>
+          Wait for her to confirm the bet deposit (you should see a notification
+          here).
+        </li>
+        <li>Play.</li>
+        <li>
+          If you win, come back here to this page to redeem your prize.
+        </li>
+      </ol>
+      {:else}
+      <form on:submit="{acceptChallenge}">
+        <p>
+          Accept this challenge for {parseInt(challenge.msatoshi/1000)} sat?
+        </p>
+        <button>Accept challenge</button>
+      </form>
+      {/if}
+      <img src="/initial.png" />
+    </div>
+    {:else if !gamestarted}
+    <h3>Bets are placed</h3>
+    <p>Just proceed to play.</p>
+    <ol>
+      <li>
+        Open
+        <a href="https://lichess.org/{gameid}?color={ourside}" target="_blank"
+          >this Lichess URL</a
+        >
+        on another tab to play.
+      </li>
+      <li>
+        If you win, come back here to this page to redeem your prize.
+      </li>
+    </ol>
+    <img src="/initial.png" />
+    {:else if !winner}
+    <h3>The game has started</h3>
+    <ol>
+      <li>
+        Open
+        <a href="https://lichess.org/{gameid}?color={ourside}" target="_blank"
+          >this Lichess URL</a
+        >
+        on another tab to play.
+      </li>
+      <li>
+        If you win, come back here to this page to redeem your prize.
+      </li>
+    </ol>
+    <img src="/initial.png" />
+    {:else}
+    <div id="endgame">
+      <iframe
+        src="https://lichess.org/embed/{gameid}?theme=auto&bg=auto"
+        style="width: 400px; height: 444px;"
+        frameborder="0"
+      ></iframe>
+      <div>
+        {#if winner === ourside}
+        <p>
+          You've won this game.
+        </p>
+        {#if $account.id}
+        <button on:click="{extractSats}">
+          Extract {parseInt(challenge.msatoshi/1000)} satoshis to your Etleneum
+          account.
+        </button>
+        <p>
+          You'll find the money on
+          <a href="https://etleneum.com/#/account" target="_blank">Etleneum</a>.
+          Just use the same login method.
+        </p>
+        {:else}
+        <p>
+          Login to extract your satoshis from this game.
+        </p>
+        <div id="login">
+          <Auth color="#ffffff" qrsize="300" />
+        </div>
+        {/if} {:else}
+        <p>
+          {capitalize(winner)} has won. {capitalize(winner === 'black' ? 'white'
+          : 'black')} has lost.
+        </p>
+        <p>
+          No satoshi for you.
+        </p>
+        {/if}
+      </div>
+    </div>
+    {/if}
+  </div>
+  {/if}
+</div>

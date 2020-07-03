@@ -7,6 +7,19 @@
   const dispatch = createEventDispatcher()
 
   export let invoice
+  export let color
+
+  let hrp = invoice
+    .split('1')
+    .slice(0, -1)
+    .join('')
+  let numbers = 0
+  try {
+    numbers = hrp.match(/\d+/)[0].length
+  } catch (err) {}
+  let multiplier = hrp[hrp.length - 1]
+  let isNegligible =
+    (multiplier === 'n' && numbers <= 3) || (multiplier === 'p' && numbers <= 5)
 
   function dispatchCancel(e) {
     e.preventDefault()
@@ -20,6 +33,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+  small {
+    cursor: pointer;
+    cursor: help;
   }
   .wrap {
     word-wrap: break-word;
@@ -37,8 +54,14 @@
 </style>
 
 <div class="center">
-  <p>Pay to finish the operation:</p>
-  <a href="lightning:{invoice}"><QR value="{invoice}"/></a>
+  <p>Pay to finish the operation.</p>
+  {#if isNegligible}
+  <small
+    title="For anti-spam reasons every method call on Etleneum is charged at least 1 sat."
+    >Why do I have to pay?</small
+  >
+  {/if}
+  <a href="lightning:{invoice}"><QR value="{invoice}" color="{color}"/></a>
   <div class="wrap">{invoice}</div>
   <button class="cancel" on:click="{dispatchCancel}">Cancel</button>
 </div>

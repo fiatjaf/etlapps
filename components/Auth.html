@@ -9,6 +9,7 @@
 
   const SEEDAUTH = window.SEEDAUTH || 'https://seed-auth.etleneum.com'
 
+  export let color = '#333'
   export let qrsize = 300
 
   var awaitingSeedAuth = false
@@ -130,7 +131,7 @@
   {:else if !$store.id}
   <p>
     Login to Etleneum using an
-    <a href="https://github.com/fiatjaf/awesome-lnurl" target="_blank"
+    <a href="https://github.com/fiatjaf/awesome-lnurl#wallets" target="_blank"
       >lnurl-auth</a
     >-powered wallet:
   </p>
@@ -138,6 +139,7 @@
     >{#if $store.lnurl.auth}<QR
       value="{$store.lnurl.auth}"
       size="{qrsize}"
+      color="{color}"
     />{/if}</a
   >
   <p>
@@ -158,7 +160,7 @@
   </p>
   {#if $store.balance}
   <a class="qr" href="lightning:{$store.lnurl.withdraw}">
-    <QR value="{$store.lnurl.withdraw}" size="{qrsize/2}" />
+    <QR value="{$store.lnurl.withdraw}" size="{qrsize/2}" color="{color}" />
     Withdraw balance: {$store.balance/1000}sat
   </a>
   {/if} {/if}

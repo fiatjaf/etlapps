@@ -1,0 +1,193 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+  import {loadCall} from 'etleneum'
+  import shajs from 'sha.js'
+
+  import {sha256, getBaseSecret, state} from './helpers'
+
+  import * as toast from '../../common/toast.js'
+  import account from '../../components/etleneumAccountStore'
+  import PayToCall from '../../components/PayToCall.html'
+
+  const contract = getContext('contract')
+
+  var call
+  var settings = {
+    msatoshi: 1000000,
+    correspondence: false,
+    initial: 10800,
+    increment: 60,
+    color: randomColor()
+  }
+
+  function randomColor() {
+    return Math.random() < 0.5 ? 'black' : 'white'
+  }
+
+  function randomizeColor(e) {
+    e.preventDefault()
+    toast.info('Color randomized!', 2000)
+    settings.color = randomColor()
+  }
+
+  function cancel() {
+    call = null
+  }
+
+  async function createChallenge(e) {
+    e.preventDefault()
+
+    let params = new URLSearchParams()
+    if (!settings.correspondence) {
+      params.set('clock.limit', settings.initial)
+      params.set('clock.increment', settings.increment)
+    }
+    let res = await (
+      await fetch('https://lichess.org/api/challenge/open', {
+        method: 'POST',
+        body: params.toString()
+      })
+    ).json()
+
+    let challengeid = 'c' + parseInt(Math.random() * 999999)
+
+    state.update(st => {
+      st.challenge = challengeid
+      st.game = res.challenge.id
+      return st
+    })
+
+    call = await contract.prepareCall('openchallenge', settings.msatoshi, {
+      challenge: challengeid,
+      gameid_hash: shajs('sha256')
+        .update(res.challenge.id)
+        .digest('hex'),
+      color: settings.color,
+      secret_hash: sha256(sha256(getBaseSecret() + ':' + challengeid))
+    })
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+</script>
+
+<style>
+  main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  main > * {
+    margin: 0 20px;
+  }
+  form {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+  }
+  h3 {
+    padding: 0;
+    margin: 0;
+  }
+  label {
+    display: block;
+    margin: 0 4px;
+  }
+  form > * {
+    margin: 10px 0;
+  }
+  form div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<main>
+  {#if call}
+  <PayToCall color="#ffffff" invoice="{call.invoice}" on:cancel="{cancel}" />
+  {:else}
+  <div>
+    <iframe
+      src="https://lichess.org/tv/frame?theme=maple2&bg=light"
+      style="width: 400px; height: 444px;"
+      allowtransparency="true"
+      frameborder="0"
+    ></iframe>
+  </div>
+  <form on:submit="{createChallenge}">
+    <h3>Create a challenge</h3>
+    <label>
+      Amount
+      <input
+        type="range"
+        min="100000"
+        max="10000000"
+        step="1000"
+        bind:value="{settings.msatoshi}"
+      />
+      {parseInt(settings.msatoshi/1000)} sat
+    </label>
+    <div>
+      <label>
+        No time limit
+        <input
+          type="radio"
+          value="{true}"
+          bind:group="{settings.correspondence}"
+        />
+      </label>
+      <label>
+        Timed
+        <input
+          type="radio"
+          value="{false}"
+          bind:group="{settings.correspondence}"
+        />
+      </label>
+    </div>
+    {#if !settings.correspondence}
+    <label>
+      Initial time:
+      <input
+        type="range"
+        min="60"
+        max="10800"
+        step="60"
+        bind:value="{settings.initial}"
+      />
+      {parseInt(settings.initial / 60)}m
+    </label>
+    <label>
+      Increment:
+      <input
+        type="range"
+        min="0"
+        max="60"
+        step="1"
+        bind:value="{settings.increment}"
+      />
+      {settings.increment}s
+    </label>
+    {/if}
+    <div>
+      <label>
+        Black
+        <input type="radio" value="black" bind:group="{settings.color}" />
+      </label>
+      <label>
+        White
+        <input type="radio" value="white" bind:group="{settings.color}" />
+      </label>
+      <button on:click="{randomizeColor}" style="font-size: 75%">
+        Randomize
+      </button>
+    </div>
+    <button type="submit">Create</button>
+  </form>
+  {/if}
+</main>
