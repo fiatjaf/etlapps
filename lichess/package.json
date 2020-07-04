@@ -14,7 +14,7 @@
   "dependencies": {
     "@rollup/plugin-inject": "^4.0.2",
     "buffer": "^5.6.0",
-    "etleneum": "link:/home/fiatjaf/comp/etleneum-client/",
+    "etleneum": "latest",
     "svelte-kjua": "^1.2.0",
     "toastify-js": "^1.8.0"
   }
