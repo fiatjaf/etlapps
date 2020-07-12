@@ -20,6 +20,11 @@
     let [k, v] = location.hash.slice(1).split('=')
     if (k === 'addr') {
       addrInURL = v
+
+      if (addrInURL.indexOf('bitcoin:') !== -1) {
+        addrInURL = addrInURL.slice(8)
+      }
+
       onMount(() => {
         queueElement.scrollIntoView()
       })
