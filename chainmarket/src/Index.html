@@ -14,8 +14,20 @@
   onMount(startListening)
   onMount(getBlockchainTip)
 
+  var queueElement
+  var addrInURL
+  try {
+    let [k, v] = location.hash.slice(1).split('=')
+    if (k === 'addr') {
+      addrInURL = v
+      onMount(() => {
+        queueElement.scrollIntoView()
+      })
+    }
+  } catch (err) {}
+
   var offers = {}
-  var creating = {}
+  var creating = {fee_sat: 34, addr: addrInURL}
   var txid = null
   var to_reserve = {}
   var feerate = 1
@@ -272,7 +284,7 @@
     >
     that powers this automated market.
   </p>
-  <h2>
+  <h2 id="queue" bind:this="{queueElement}">
     <span class="role maker">[ maker ]</span> Queue a payment
     <span
       data-wenk="Your payment will be pending until someone decides to fulfill it: which means to send a transaction with exact amounts to the onchain address and take the sats."
