@@ -7,8 +7,8 @@
 
   import Index from './Index.html'
   import Offer from './Offer.html'
-  import Completion from './Completion.html'
   import AccountPage from './AccountPage.html'
+  import account from '../../components/etleneumAccountStore'
   import Foot from '../../components/Footer.html'
   import Auth from '../../components/Auth.html'
   import kbAccountStore from '../../components/kbAccountStore'
@@ -17,9 +17,8 @@
 
   const routes = {
     '/': Index,
-    '/:offer_id': Offer,
-    '/:offer_id/:completer': Completion,
-    '/account': AccountPage
+    '/account': AccountPage,
+    '/:offer_id': Offer
   }
 
   setContext('contract', Contract(CONTRACT))
@@ -62,6 +61,10 @@
       <small>
         reverse crowdfunding platform
       </small>
+      {#if $account}
+      <br />
+      <small><a href="#/account">my account</a></small>
+      {/if}
     </h1>
     <Auth />
   </header>

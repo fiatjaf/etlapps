@@ -42,7 +42,7 @@
           if (id === call.id) {
             toast.success('Bounty created!')
             call = null
-            satoshis = 0
+            creating = {satoshis: 1000, payload: {}}
             setTimeout(call.stop, 1)
             loadBanner()
           }
@@ -131,7 +131,7 @@
   <form id="create" on:submit="{create}">
     <label>Task: <input bind:value="{creating.payload.head}"/></label>
     <label
-      >Satoshis:
+      >Satoshis to offer:
       <input bind:value="{creating.satoshis}" type="number" />
     </label>
     <label>

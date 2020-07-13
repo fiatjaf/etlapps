@@ -226,10 +226,15 @@
       {/each}
     </div>
 
+    <br />
+
+    {#if $account}
     <div id="completion">
       {#if !completing}
-      <button on:click="{startCompleting}">I've completed this project!</button>
-      {:else if $account && offer.voters.indexOf($account.id) === -1}
+      <button on:click="{startCompleting}">
+        I've completed this project!
+      </button>
+      {:else if offer.voters.indexOf($account.id) === -1}
       <form on:submit="{sendCompletion}">
         <p>
           Write a brief description, links or any other info that can be used to
@@ -242,9 +247,15 @@
       </form>
       {/if}
     </div>
+    {:else}
+    <p>
+      Login above to send your completion.
+    </p>
+    {/if}
   </div>
   {:else if offer === null}
   <p>Offer {params.offer_id} doesn't exist.</p>
   {/if}
 </div>
+<br />
 <hr />
