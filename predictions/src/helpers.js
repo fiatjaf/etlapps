@@ -2,7 +2,7 @@ import {writable} from 'svelte/store'
 
 export const state = writable({})
 
-export const sharePrice = 10 * 1000
+export const sharePrice = 100 * 1000
 
 export function calcBalance(liquidity, yesShares, noShares) {
   return Math.ceil(

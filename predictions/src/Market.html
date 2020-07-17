@@ -10,7 +10,8 @@
     sharePrice,
     countShares,
     calcBalance,
-    capitalize
+    capitalize,
+    marketImpliedProbability
   } from './helpers'
 
   export let marketId
@@ -18,27 +19,32 @@
   const contract = getContext('contract')
   const marketsStore = getContext('markets')
 
-  var market
-  marketsStore.subscribe(markets => {
-    if (markets[marketId]) {
-      market = {id: marketId, ...markets[marketId]}
-    }
-  })
+  var params = {
+    nshares: 1,
+    side: 'yes',
+    type: 'buy'
+  }
 
   var call
   onMount(() => {
     return getContext('unset-call')(() => {
       call = null
       params.type = 'buy'
-      params.nshares = 1
+      params.nshares = market.liquidity
     })
   })
 
-  var params = {
-    nshares: 1,
-    side: 'yes',
-    type: 'buy'
-  }
+  var market
+  marketsStore.subscribe(markets => {
+    if (markets[marketId]) {
+      if (market) {
+        market = {id: marketId, ...markets[marketId]}
+      } else {
+        market = {id: marketId, ...markets[marketId]}
+        params.nshares = market.liquidity
+      }
+    }
+  })
 
   $: sharesMax =
     market &&
@@ -61,6 +67,10 @@
       )
   }
   $: each = msatoshiDiff && msatoshiDiff[params.type] / params.nshares
+  $: canWin =
+    params.type === 'buy' &&
+    msatoshiDiff &&
+    params.nshares * sharePrice - msatoshiDiff.buy
 
   function cancel() {
     call = null
@@ -114,7 +124,21 @@
 </script>
 
 <style>
-  h2 {
+  header aside {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  header aside > * {
+    margin: 2px 4px;
+    padding: 1px 2px;
+    transition: all 0.2s ease-in-out;
+  }
+  header aside > *:not(:hover) {
+    background-color: var(--background-main);
+    color: var(--links);
+  }
+  header h2 {
     text-align: center;
   }
   .side-buttons {
@@ -148,8 +172,31 @@
 </div>
 {:else}
 <form on:submit="{ exchange}">
-  <h1>Making a bet</h1>
-  <h2>{market.terms}</h2>
+  <p>Making a bet on:</p>
+  <header>
+    <h2>{market.terms}</h2>
+    <aside>
+      <code>{countShares(market, 'yes')} yes</code>
+      <code>{countShares(market, 'no')} no</code>
+      <code
+        >created: {(new Date(market.created *
+        1000)).toISOString().split('T')[0]}</code
+      >
+      <code>lf {market.liquidity}</code>
+      {#if market.lastexchange}
+      <code
+        >exchanged: {(new Date(market.lastexchange*
+        1000)).toISOString().split('T')[0]}</code
+      >
+      <code>{market.nexchanges} exchanges</code>
+      {/if} {#each market.resolvers as rsv}
+      <code>resolver: {rsv}</code>
+      {/each} {#if Object.keys(market.votes).length}
+      <code>{Object.keys(market.votes).length} votes cast</code>
+      {/if}
+      <code>{parseInt(market.balance / 1000)} sat</code>
+    </aside>
+  </header>
   {#if $account.id && (market.shares.yes[$account.id] ||
   market.shares.no[$account.id])}
   <label>
@@ -196,11 +243,9 @@
       </div>
     </div>
     <small
-      ><code>YES</code> means
-      <span
-        >the question or statement above will be answered with a "yes" or be
-        true</span
-      >, <code>NO</code> means it will be false or answered with a "no".</small
+      ><code>YES</code> means the question or statement
+      <em>"{market.terms}"</em> will be resolved as true, <code>NO</code> means
+      it will be resolved as false.</small
     >
   </label>
   <label>
@@ -213,10 +258,13 @@
       bind:value="{params.nshares}"
     />
     <small>
-      If the market resolves to your side, each share is worth
-      {parseInt(sharePrice / 1000)} satoshi, paid to your
+      If the market resolves to your side, each share is paid
+      <em
+        ><b style="font-size: 18px">{parseInt(sharePrice / 1000)}</b>
+        satoshi</em
+      >, paid to your
       <a href="https://etleneum.com/" target="_blank">Etleneum</a> account,
-      otherwise it will be worth zero.
+      otherwise it will be worth <b>zero</b>.
     </small>
   </label>
   <div class="button-wrap">
@@ -228,11 +276,17 @@
       <Auth />
     </div>
     {/if}
-    <button disabled="{!$account.id}">
+    <button
+      disabled="{!$account.id}"
+      class:yes="{params.side === 'yes'}"
+      class:no="{params.side === 'no'}"
+    >
       {capitalize(params.type)} {params.nshares} {params.side.toUpperCase()}
       share{#if params.nshares > 1}s{/if} for
       {Math.ceil(msatoshiDiff[params.type] / 1000)} sat{#if params.nshares > 1}
-      ({Math.ceil(each / 1000)} each){/if}
+      {#if params.type === 'buy'} &nbsp;(can profit up to
+      {Math.floor(canWin/1000)}){:else} &nbsp;({Math.ceil(each / 1000)}
+      each){/if}{/if}
     </button>
   </div>
 </form>

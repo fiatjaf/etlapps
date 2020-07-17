@@ -9,6 +9,7 @@
 
   import * as toast from '../../common/toast.js'
   import account from '../../components/etleneumAccountStore'
+  import Auth from '../../components/Auth.html'
 
   var marketOpen = null
   var createOpen = null
@@ -161,6 +162,9 @@
     margin: 10px;
     padding: 5px;
   }
+  center {
+    margin: auto;
+  }
 </style>
 
 <div
@@ -194,4 +198,7 @@
   {/each}
   <hr />
   <button on:click="{openCreate}">Open a new market</button>
+  {#if $account.id}
+  <center><Auth /></center>
+  {/if}
 </main>
