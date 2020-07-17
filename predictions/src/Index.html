@@ -13,8 +13,20 @@
   var marketOpen = null
   var createOpen = null
 
+  const marketsStore = getContext('markets')
+
+  onMount(() => {
+    let hash = location.hash.slice(1)
+    if (hash === '/create') {
+      openCreate()
+    } else if (hash.split('/')[1] === 'market') {
+      let id = hash.split('/')[2]
+      openMarket(id)()
+    }
+  })
+
   var marketList = []
-  getContext('markets').subscribe(markets => {
+  marketsStore.subscribe(markets => {
     marketList = Object.keys(markets)
       .map(id => ({id, ...markets[id]}))
       .sort((a, b) => score(b) - score(a))
@@ -35,25 +47,32 @@
     })
   })
 
-  function openMarket(market) {
+  function openMarket(marketId) {
     return e => {
-      e.preventDefault()
-      marketOpen = market
+      e && e.preventDefault()
+      marketOpen = marketId
       createOpen = null
+      location.hash = '#/market/' + marketId
     }
   }
 
   function openCreate(e) {
-    e.preventDefault()
+    e && e.preventDefault()
     createOpen = true
     marketOpen = null
+    location.hash = '#/create'
   }
 
-  function closeModal(e) {
+  function clickModalBackground(e) {
     if (e.target.classList.contains('modal-wrapper')) {
-      marketOpen = null
-      createOpen = null
+      closeModal()
     }
+  }
+
+  function closeModal() {
+    marketOpen = null
+    createOpen = null
+    location.hash = '#/'
   }
 </script>
 
@@ -147,11 +166,11 @@
 <div
   class="modal-wrapper"
   class:active="{marketOpen || createOpen}"
-  on:click="{closeModal}"
+  on:click="{clickModalBackground}"
 >
   {#if marketOpen}
   <div class="modal">
-    <Market market="{marketOpen}" />
+    <Market marketId="{marketOpen}" />
   </div>
   {:else if createOpen}
   <div class="modal">
@@ -161,7 +180,7 @@
 </div>
 <main>
   {#each marketList as market (market.id)}
-  <div class="market" on:click="{openMarket(market)}">
+  <div class="market" on:click="{openMarket(market.id)}">
     <div>{market.terms}</div>
     <div class="yes">
       <code>YES</code> {marketImpliedProbability(market, 'yes')}%
