@@ -1,0 +1,178 @@
+<!-- @format -->
+
+<script>
+  import {onMount, getContext} from 'svelte'
+
+  import Create from './Create.html'
+  import Market from './Market.html'
+  import {sharePrice, marketImpliedProbability} from './helpers'
+
+  import * as toast from '../../common/toast.js'
+  import account from '../../components/etleneumAccountStore'
+
+  var marketOpen = null
+  var createOpen = null
+
+  var marketList = []
+  getContext('markets').subscribe(markets => {
+    marketList = Object.keys(markets)
+      .map(id => ({id, ...markets[id]}))
+      .sort((a, b) => score(b) - score(a))
+  })
+
+  function score(market) {
+    return (
+      Object.keys(market.votes).length * 100 +
+      market.nexchanges +
+      Math.log(market.lastexchange - new Date().getTime() / 1000) +
+      market.balance / sharePrice
+    )
+  }
+
+  onMount(() => {
+    return getContext('unset-call')(() => {
+      createOpen = null
+    })
+  })
+
+  function openMarket(market) {
+    return e => {
+      e.preventDefault()
+      marketOpen = market
+      createOpen = null
+    }
+  }
+
+  function openCreate(e) {
+    e.preventDefault()
+    createOpen = true
+    marketOpen = null
+  }
+
+  function closeModal(e) {
+    if (e.target.classList.contains('modal-wrapper')) {
+      marketOpen = null
+      createOpen = null
+    }
+  }
+</script>
+
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  main > * {
+    margin: 0 20px;
+  }
+  hr {
+    margin: 30px auto;
+  }
+
+  .modal-wrapper {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+    z-index: -1;
+  }
+  .modal {
+    background: var(--background-secondary);
+    color: var(--color-secondary);
+    opacity: 0;
+    visibility: hidden;
+    width: 80%;
+    max-width: 60vw;
+    min-width: 500px;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    transform: translateY(100%);
+    transition: all 0.5s ease-in-out;
+    max-height: 80%;
+    overflow-y: auto;
+  }
+  .modal-wrapper.active {
+    background: rgba(9, 9, 9, 0.7);
+    z-index: 2;
+  }
+  .modal-wrapper.active .modal {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .market {
+    display: grid;
+    grid-template-columns: 2fr minmax(166px, 1fr) minmax(166px, 1fr);
+    justify-items: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 0 10px;
+  }
+  .market:hover {
+    background-color: var(--background-secondary);
+  }
+  .market > *:first-child {
+    font-size: 120%;
+    justify-self: start;
+  }
+  .yes,
+  .no {
+    font-size: 200%;
+  }
+  .yes code {
+    background-color: var(--emphasis);
+    color: white;
+  }
+  .no code {
+    background-color: var(--emphasis-rare);
+  }
+  .market code {
+    width: 72px;
+    display: inline-block;
+    text-align: center;
+    margin: 10px;
+    padding: 5px;
+  }
+</style>
+
+<div
+  class="modal-wrapper"
+  class:active="{marketOpen || createOpen}"
+  on:click="{closeModal}"
+>
+  {#if marketOpen}
+  <div class="modal">
+    <Market market="{marketOpen}" />
+  </div>
+  {:else if createOpen}
+  <div class="modal">
+    <Create />
+  </div>
+  {/if}
+</div>
+<main>
+  {#each marketList as market (market.id)}
+  <div class="market" on:click="{openMarket(market)}">
+    <div>{market.terms}</div>
+    <div class="yes">
+      <code>YES</code> {marketImpliedProbability(market, 'yes')}%
+    </div>
+    <div class="no">
+      <code>NO</code> {marketImpliedProbability(market, 'no')}%
+    </div>
+  </div>
+  {:else}
+  <p>No markets open right now.</p>
+  {/each}
+  <hr />
+  <button on:click="{openCreate}">Open a new market</button>
+</main>

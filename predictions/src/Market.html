@@ -1,0 +1,169 @@
+<script>
+  import {onMount, getContext} from 'svelte'
+
+  import PayToCall from '../../components/PayToCall.html'
+  import Auth from '../../components/Auth.html'
+  import account from '../../components/etleneumAccountStore'
+
+  import {
+    state,
+    sharePrice,
+    countShares,
+    calcBalance,
+    capitalize
+  } from './helpers'
+
+  export let market
+
+  const contract = getContext('contract')
+
+  var call
+  onMount(() => {
+    return getContext('unset-call')(() => {
+      call = null
+      params.nshares = 1
+    })
+  })
+
+  var params = {
+    id: market.id,
+    nshares: 1,
+    side: 'yes',
+    type: 'buy'
+  }
+
+  $: requiredMsatoshi =
+    calcBalance(
+      market.liquidity,
+      countShares(market, 'yes') + (params.side === 'yes' ? params.nshares : 0),
+      countShares(market, 'no') + (params.side === 'no' ? params.nshares : 0)
+    ) - market.balance
+  $: each = requiredMsatoshi / params.nshares
+
+  function cancel() {
+    call = null
+  }
+
+  async function exchange(e) {
+    e.preventDefault()
+
+    state.update(st => {
+      return st
+    })
+
+    call = await contract.prepareCall(
+      'exchange',
+      requiredMsatoshi,
+      params,
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+
+  function setSide(side) {
+    return e => {
+      e.preventDefault()
+      params.side = side
+    }
+  }
+</script>
+
+<style>
+  h2 {
+    text-align: center;
+  }
+  .side-buttons {
+    display: flex;
+    justify-content: space-around;
+  }
+  .side-buttons > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .side-buttons small {
+    display: block;
+    margin: auto;
+    text-align: center;
+  }
+</style>
+
+{#if call}
+<div class="call">
+  <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
+</div>
+{:else}
+<form on:submit="{ exchange}">
+  <h1>Making a bet</h1>
+  <h2>{market.terms}</h2>
+  <label on:click="{e => e.preventDefault()}" for="nothing">
+    <div>Side</div>
+    <div class="side-buttons">
+      <div>
+        {#if $account.id && market.shares.yes[$account.id]}
+        <small>balance: {market.shares.yes[$account.id]}</small>
+        {/if}
+        <button
+          class:active="{params.side === 'yes'}"
+          on:click="{setSide('yes')}"
+        >
+          YES
+        </button>
+      </div>
+      <div>
+        {#if $account.id && market.shares.no[$account.id]}
+        <small>balance: {market.shares.no[$account.id]}</small>
+        {/if}
+        <button
+          class:active="{params.side === 'no'}"
+          on:click="{setSide('no')}"
+        >
+          NO
+        </button>
+      </div>
+    </div>
+    <small
+      ><code>YES</code> means
+      <span
+        >the question or statement above will be answered with a "yes" or be
+        true</span
+      >, <code>NO</code> means it will be false or answered with a "no".</small
+    >
+  </label>
+  <label>
+    <div>Shares to {params.type}</div>
+    <input
+      type="range"
+      min="1"
+      max="100"
+      step="1"
+      bind:value="{params.nshares}"
+    />
+    <small>
+      If the market resolves to your side, each share is worth
+      {parseInt(sharePrice / 1000)} satoshi, paid to your
+      <a href="https://etleneum.com/" target="_blank">Etleneum</a> account,
+      otherwise it will be worth zero.
+    </small>
+  </label>
+  <div class="button-wrap">
+    {#if !$account.id}
+    <div>
+      Login to your
+      <a href="https://etleneum.com/" target="_blank">Etleneum</a> account to
+      bet on this market.
+      <Auth />
+    </div>
+    {/if}
+    <button disabled="{!$account.id}">
+      {capitalize(params.type)} {params.nshares} {params.side.toUpperCase()}
+      share{#if params.nshares > 1}s{/if} for {Math.ceil(requiredMsatoshi /
+      1000)} sat{#if params.nshares > 1} ({Math.ceil(each / 1000)} each){/if}
+    </button>
+  </div>
+</form>
+{/if}
