@@ -129,8 +129,9 @@
     transform: translateY(0);
   }
   .market {
+    width: 100%;
     display: grid;
-    grid-template-columns: 2fr minmax(166px, 1fr) minmax(166px, 1fr);
+    grid-template-columns: auto 182px 182px;
     justify-items: center;
     align-items: center;
     cursor: pointer;
@@ -147,6 +148,8 @@
   .yes,
   .no {
     font-size: 200%;
+    margin: 0 1px;
+    justify-self: stretch;
   }
   .yes code {
     background-color: var(--emphasis);

@@ -33,5 +33,5 @@ export function marketImpliedProbability(market, side) {
     Math.exp(thisShares / market.liquidity) /
     (Math.exp(thisShares / market.liquidity) +
       Math.exp(otherShares / market.liquidity))
-  return parseInt(prob * 100)
+  return Math.round(prob * 100)
 }

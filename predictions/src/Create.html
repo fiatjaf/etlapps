@@ -16,12 +16,12 @@
       call = null
       create.terms = ''
       create.resolvers = null
-      create.liquidity = 15
+      create.liquidity = 3
     })
   })
 
   var create = {
-    liquidity: 15,
+    liquidity: 3,
     resolvers: null,
     terms: ''
   }
@@ -82,9 +82,9 @@
       <div>Liquidity factor</div>
       <input
         type="range"
-        min="10"
-        max="110"
-        step="10"
+        min="1"
+        max="10"
+        step="1"
         bind:value="{create.liquidity}"
       />
       <small
