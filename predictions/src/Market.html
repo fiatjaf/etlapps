@@ -13,6 +13,7 @@
     capitalize,
     marketImpliedProbability
   } from './helpers'
+  import MarketHeader from './MarketHeader.html'
 
   export let marketId
 
@@ -25,10 +26,13 @@
     type: 'buy'
   }
 
+  var increasingLiquidity = 0
+
   var call
   onMount(() => {
     return getContext('unset-call')(() => {
       call = null
+      increasingLiquidity = 0
       params.type = 'buy'
       params.nshares = market.liquidity
     })
@@ -71,6 +75,13 @@
     params.type === 'buy' &&
     msatoshiDiff &&
     params.nshares * sharePrice - msatoshiDiff.buy
+  $: liquidityIncreaseMsatoshi =
+    market &&
+    calcBalance(
+      market.liquidity + increasingLiquidity,
+      countShares(market, 'yes'),
+      countShares(market, 'no')
+    ) - market.balance
 
   function cancel() {
     call = null
@@ -78,10 +89,6 @@
 
   async function exchange(e) {
     e.preventDefault()
-
-    state.update(st => {
-      return st
-    })
 
     call = await contract.prepareCall(
       'exchange',
@@ -92,6 +99,24 @@
         id: market.id
       },
       $account.session
+    )
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+
+  async function increaseLiquidity(e) {
+    e.preventDefault()
+
+    call = await contract.prepareCall(
+      'increaseliquidity',
+      liquidityIncreaseMsatoshi,
+      {
+        id: market.id,
+        liquidity: market.liquidity + increasingLiquidity
+      }
     )
 
     state.update(st => {
@@ -124,23 +149,6 @@
 </script>
 
 <style>
-  header aside {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-  header aside > * {
-    margin: 2px 4px;
-    padding: 1px 2px;
-    transition: all 0.2s ease-in-out;
-  }
-  header aside > *:not(:hover) {
-    background-color: var(--background-main);
-    color: var(--links);
-  }
-  header h2 {
-    text-align: center;
-  }
   .side-buttons {
     display: flex;
     justify-content: space-around;
@@ -161,6 +169,7 @@
   }
   .no {
     background-color: var(--emphasis-rare);
+    color: var(--color);
   }
 </style>
 
@@ -170,33 +179,19 @@
 <div class="call">
   <PayToCall invoice="{call.invoice}" on:cancel="{cancel}" />
 </div>
-{:else}
-<form on:submit="{ exchange}">
-  <p>Making a bet on:</p>
-  <header>
-    <h2>{market.terms}</h2>
-    <aside>
-      <code>{countShares(market, 'yes')} yes</code>
-      <code>{countShares(market, 'no')} no</code>
-      <code
-        >created: {(new Date(market.created *
-        1000)).toISOString().split('T')[0]}</code
-      >
-      <code>lf {market.liquidity}</code>
-      {#if market.lastexchange}
-      <code
-        >exchanged: {(new Date(market.lastexchange*
-        1000)).toISOString().split('T')[0]}</code
-      >
-      <code>{market.nexchanges} exchanges</code>
-      {/if} {#each market.resolvers as rsv}
-      <code>resolver: {rsv}</code>
-      {/each} {#if Object.keys(market.votes).length}
-      <code>{Object.keys(market.votes).length} votes cast</code>
-      {/if}
-      <code>{parseInt(market.balance / 1000)} sat</code>
-    </aside>
-  </header>
+{:else if !increasingLiquidity}
+<form on:submit="{exchange}">
+  <div
+    style="display: flex; justify-content: space-between; align-items: center"
+  >
+    <p>Making a bet on:</p>
+    <span
+      style="font-size: 63%; text-decoration: underline; cursor: pointer;"
+      on:click="{() => increasingLiquidity = 1}"
+      >Donate liquidity</span
+    >
+  </div>
+  <MarketHeader market="{market}" />
   {#if $account.id && (market.shares.yes[$account.id] ||
   market.shares.no[$account.id])}
   <label>
@@ -287,6 +282,25 @@
       {#if params.type === 'buy'} &nbsp;(can profit up to
       {Math.floor(canWin/1000)}){:else} &nbsp;({Math.ceil(each / 1000)}
       each){/if}{/if}
+    </button>
+  </div>
+</form>
+{:else}
+<form on:submit="{increaseLiquidity}">
+  <p>Donating liquidity to:</p>
+  <MarketHeader market="{market}" />
+  <label>
+    <div>Liquidity factor increase</div>
+    <input type="range" min="1" max="10" bind:value="{increasingLiquidity}" />
+    <small>
+      Donate some money to increase the liquidity of this market and make share
+      prices less susceptible to change over buys and sells.
+    </small>
+  </label>
+  <div class="button-wrap">
+    <button>
+      Factor change from {market.liquidity} to {market.liquidity +
+      increasingLiquidity} for {Math.ceil(liquidityIncreaseMsatoshi / 1000)} sat
     </button>
   </div>
 </form>
