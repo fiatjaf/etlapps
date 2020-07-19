@@ -18,7 +18,8 @@
   var challengeid
   var gameid
   var challenge
-  var winner = null
+  var winner = undefined
+  var draw = false
   var ourside
   var pending
   var gamestarted
@@ -74,17 +75,40 @@
   async function loadGame() {
     var res
     try {
-      res = await (
-        await fetch(
-          `https://lichess.org/game/export/${gameid}?moves=false&clocks=false&evals=false&opening=false&literate=false&pgnInJson=true`
-        )
-      ).text()
+      let r = await fetch(
+        `https://lichess.org/game/export/${gameid}?moves=false&clocks=false&evals=false&opening=false&literate=false&pgnInJson=true`
+      )
+
+      if (r.status === 404) {
+        throw new Error('404')
+      }
     } catch (err) {
-      // game not started
-      return
+      // a 404 will produce a bizarre CORS error here
+      if (
+        challenge &&
+        challenge.creation + 259200 < new Date().getTime() / 1000
+      ) {
+        gamestarted = true
+        draw = true
+        return
+      } else {
+        // game not started yet
+        return
+      }
     }
 
+    res = await r.text()
+
     gamestarted = true
+
+    if (res.indexOf('[Result "1/2-1/2"]') !== -1) {
+      draw = true
+      return
+    }
+    if (res.indexOf('[Termination "Abandoned"]') !== -1) {
+      draw = true
+      return
+    }
 
     let result = /\[Result "([^"]+)"\]/.exec(res)[1]
     switch (result) {
@@ -144,6 +168,13 @@
   form {
     margin: 20px 0;
   }
+  .challengeurl {
+    display: inline;
+    width: 250px;
+    padding: 0 2px;
+    background: var(--emphasis);
+    margin: 0;
+  }
   #endgame {
     display: flex;
     align-items: flex-start;
@@ -169,7 +200,7 @@
       {:else if !pending} Not playing this game {:else} Open challenge {/if}
     </h2>
 
-    {#if pending}
+    {#if pending && !draw}
     <div>
       {#if ourside}
       <h3>This is an open challenge</h3>
@@ -177,15 +208,15 @@
       <ol>
         <li>
           Open
-          <input
-            value="https://lichess.org/{gameid}?color={ourside}"
-            readonly
-          />
+          <a href="https://lichess.org/{gameid}?color={ourside}" target="_blank"
+            >the game on Lichess</a
+          >
           on another tab and click to join the game.
         </li>
         <li>
-          Share <a href="{location.href}">this challenge page</a> with the
-          person you want to challenge.
+          Share
+          <input value="{location.href}" readonly class="challengeurl" />
+          with the person you want to challenge.
         </li>
         <li>
           Wait for her to confirm the bet deposit (you should see a notification
@@ -222,7 +253,7 @@
       </li>
     </ol>
     <img src="/initial.png" />
-    {:else if !winner}
+    {:else if !winner && !draw}
     <h3>The game has started</h3>
     <ol>
       <li>
@@ -237,7 +268,7 @@
       </li>
     </ol>
     <img src="/initial.png" />
-    {:else}
+    {:else if winner || draw}
     <div id="endgame">
       <iframe
         src="https://lichess.org/embed/{gameid}?theme=auto&bg=auto"
@@ -245,36 +276,52 @@
         frameborder="0"
       ></iframe>
       <div>
+        <p>
+          {#if winner}
+          <span>
+            {capitalize(winner)} has won. {capitalize(winner === 'black' ?
+            'white' : 'black')} has lost.
+          </span>
+          {:else if draw}
+          <span>
+            No one has won.
+          </span>
+          {/if}
+        </p>
+
         {#if winner === ourside}
-        <p>
-          You've won this game.
-        </p>
-        {#if $account.id}
-        <button on:click="{extractSats}">
-          Extract {parseInt(challenge.msatoshi/1000)} satoshis to your Etleneum
-          account.
-        </button>
-        <p>
-          You'll find the money on
-          <a href="https://etleneum.com/#/account" target="_blank">Etleneum</a>.
-          Just use the same login method.
-        </p>
+        <p>You've won this game.</p>
+        {:else if draw}
+        <p>You can extract half of the satoshis.</p>
         {:else}
-        <p>
-          Login to extract your satoshis from this game.
-        </p>
-        <div id="login">
-          <Auth background="#ffffff" qrsize="300" />
-        </div>
-        {/if} {:else}
-        <p>
-          {capitalize(winner)} has won. {capitalize(winner === 'black' ? 'white'
-          : 'black')} has lost.
-        </p>
-        <p>
-          No satoshi for you.
-        </p>
+        <p>No satoshi for you.</p>
         {/if}
+
+        <div>
+          {#if winner === ourside || (!!ourside && draw)}
+          <div>
+            {#if $account.id}
+            <button on:click="{extractSats}">
+              Extract {parseInt((challenge.msatoshi/1000) / (draw && !pending ?
+              2 : 1))} satoshis to your Etleneum account.
+            </button>
+            <p>
+              You'll find the money on
+              <a href="https://etleneum.com/#/account" target="_blank"
+                >Etleneum</a
+              >. Just use the same login method.
+            </p>
+            {:else}
+            <p>
+              Login to extract your satoshis from this game.
+            </p>
+            <div id="login">
+              <Auth background="#ffffff" qrsize="300" />
+            </div>
+            {/if}
+          </div>
+          {/if}
+        </div>
       </div>
     </div>
     {/if}
