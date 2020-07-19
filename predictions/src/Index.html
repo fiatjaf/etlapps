@@ -37,7 +37,9 @@
     return (
       Object.keys(market.votes).length * 100 +
       market.nexchanges +
-      Math.log(market.lastexchange - new Date().getTime() / 1000) +
+      Math.log(
+        -1 * ((market.lastexchange || 0) - new Date().getTime() / 1000)
+      ) +
       market.balance / sharePrice
     )
   }
