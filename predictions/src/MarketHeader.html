@@ -1,5 +1,6 @@
 <script>
   import {countShares} from './helpers'
+  import keybase from '../../components/kbAccountStore'
 
   export let market
 </script>
@@ -41,7 +42,13 @@
     >
     <code>{market.nexchanges} exchanges</code>
     {/if} {#each market.resolvers as rsv}
-    <code>resolver: {rsv}</code>
+    <code
+      >resolver: {#if rsv in $keybase}<a
+        href="https://keybase.io/{$keybase[rsv]}"
+        target="_blank"
+        >{$keybase[rsv]}</a
+      >{:else}{rsv}{/if}</code
+    >
     {/each} {#if Object.keys(market.votes).length}
     <code>{Object.keys(market.votes).length} votes cast</code>
     {/if}

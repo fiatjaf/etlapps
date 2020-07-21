@@ -5,7 +5,7 @@
 
   import Create from './Create.html'
   import Market from './Market.html'
-  import {sharePrice, marketImpliedProbability} from './helpers'
+  import {countShares, marketImpliedProbability} from './helpers'
 
   import * as toast from '../../common/toast.js'
   import account from '../../components/etleneumAccountStore'
@@ -40,7 +40,8 @@
       Math.log(
         -1 * ((market.lastexchange || 0) - new Date().getTime() / 1000)
       ) +
-      market.balance / sharePrice
+      countShares(market, 'yes') +
+      countShares(market, 'no')
     )
   }
 
