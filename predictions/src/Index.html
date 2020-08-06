@@ -30,6 +30,7 @@
   marketsStore.subscribe(markets => {
     marketList = Object.keys(markets)
       .map(id => ({id, ...markets[id]}))
+      .filter(({terms}) => terms.length > 20)
       .sort((a, b) => score(b) - score(a))
   })
 
@@ -112,14 +113,14 @@
     color: var(--color-secondary);
     opacity: 0;
     visibility: hidden;
-    width: 80%;
-    max-width: 60vw;
-    min-width: 500px;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
     box-sizing: border-box;
     transform: translateY(100%);
     transition: all 0.5s ease-in-out;
-    max-height: 80%;
+    width: 700px;
+    max-width: 100vw;
+    height: 700px;
+    max-height: 100vh;
     overflow-y: auto;
   }
   .modal-wrapper.active {
@@ -140,6 +141,10 @@
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     padding: 0 10px;
+  }
+  .market:nth-child(2n) > :nth-child(1) {
+    color: #4d5947;
+    margin: 10px 0;
   }
   .market:hover {
     background-color: var(--background-secondary);
