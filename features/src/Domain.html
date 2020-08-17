@@ -5,9 +5,11 @@
 
   import Request from './Request.html'
   import Nothing from './Nothing.html'
+  import {CONTRACT} from './constants'
 
   import PayToCall from '../../components/PayToCall.html'
   import * as toast from '../../components/toast'
+  import kb from '../../components/kbAccountStore'
 
   const contract = getContext('contract')
   export let params
@@ -110,7 +112,7 @@
     color: inherit;
   }
   main {
-    margin: 0 auto 43px;
+    margin: 0 auto;
     padding-top: 0;
     display: flex;
     justify-content: space-between;
@@ -128,6 +130,11 @@
     margin: 10px;
     display: flex;
     flex-direction: column;
+  }
+  #ownership {
+    width: 100%;
+    margin: 10px auto 0;
+    padding: 23px 23px 0;
   }
   #requests aside {
     margin: 0.4rem;
@@ -196,6 +203,21 @@
       <button>Create</button>
     </form>
     {/if}
+  </div>
+  <div id="ownership">
+    <p>
+      This project page is owned by account {#if $kb[data.owner]}<a
+        href="https://keybase.io/{$kb[data.owner]}"
+        >{$kb[data.owner]}</a
+      >{:else}<em>{data.owner}</em>{/if}. Make sure this person has the right to
+      respond for <em>{data.name}</em> before continuing.
+    </p>
+    <p>
+      To create a feature requests management page for your project, use
+      <a href="https://etleneum.com/#/contract/{CONTRACT}"
+        >a raw Etleneum <code>register</code> call</a
+      >.
+    </p>
   </div>
   {:else}
   <p>Loading...</p>
