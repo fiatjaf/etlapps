@@ -1,0 +1,9 @@
+*.env
+*.swp
+*.swo
+node_modules
+static/*bundle*
+.netlify
+*.debug
+*.log
+static/global.css

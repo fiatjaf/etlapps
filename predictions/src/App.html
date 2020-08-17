@@ -39,54 +39,56 @@
     }
   }
 
-  contract.stream(
-    async id => {
-      loadMarkets()
+  onMount(() => {
+    return contract.stream(
+      async id => {
+        loadMarkets()
 
-      let newCall = await loadCall(id)
+        let newCall = await loadCall(id)
 
-      if ($state.call === id) {
-        for (let i = 0; i < unsetCallListeners.length; i++) {
-          unsetCallListeners[i]()
+        if ($state.call === id) {
+          for (let i = 0; i < unsetCallListeners.length; i++) {
+            unsetCallListeners[i]()
+          }
+
+          switch (newCall.method) {
+            case 'create_market':
+              // we've created a market
+              toast.success(`Your market was created!`)
+              break
+            case 'exchange':
+              // we've made an exchange
+              toast.success(`Exchange made!`)
+              break
+            case 'resolve':
+              // we've voted
+              toast.success('Vote cast!')
+          }
+        } else {
+          switch (newCall.method) {
+            case 'create_market':
+              // someone else has created a market
+              toast.success(`A market was created!`)
+              break
+            case 'exchange':
+              // someone else has made an exchange
+              toast.success(`Someone exchanged shares!`)
+              break
+            case 'resolve':
+              // someone else has voted
+              toast.success('Someone voted on a resolution!')
+          }
         }
-
-        switch (newCall.method) {
-          case 'create_market':
-            // we've created a market
-            toast.success(`Your market was created!`)
-            break
-          case 'exchange':
-            // we've made an exchange
-            toast.success(`Exchange made!`)
-            break
-          case 'resolve':
-            // we've voted
-            toast.success('Vote cast!')
-        }
-      } else {
-        switch (newCall.method) {
-          case 'create_market':
-            // someone else has created a market
-            toast.success(`A market was created!`)
-            break
-          case 'exchange':
-            // someone else has made an exchange
-            toast.success(`Someone exchanged shares!`)
-            break
-          case 'resolve':
-            // someone else has voted
-            toast.success('Someone voted on a resolution!')
+      },
+      (id, errMessage) => {
+        if ($state.call === id) {
+          toast.warning(`Your call failed: ${errMessage}`)
+        } else {
+          toast.warning(`A call from someone else failed: ${errMessage}`)
         }
       }
-    },
-    (id, errMessage) => {
-      if ($state.call === id) {
-        toast.warning(`Your call failed: ${errMessage}`)
-      } else {
-        toast.warning(`A call from someone else failed: ${errMessage}`)
-      }
-    }
-  )
+    )
+  })
 </script>
 
 <style>

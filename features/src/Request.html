@@ -1,0 +1,127 @@
+<script>
+  import {CONTRACT} from './constants'
+
+  import LNURLPayCall from '../../components/LNURLPayCall.html'
+
+  export let data
+  export let idx
+  export let key
+  var opened = false
+
+  function show(e) {
+    e.preventDefault()
+    opened = true
+  }
+
+  function hide(e) {
+    e.preventDefault()
+    opened = false
+  }
+</script>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  h2 {
+    color: var(--emphasis);
+    cursor: pointer;
+  }
+  h3 {
+    text-align: center;
+  }
+  .points {
+    background: var(--background-secondary);
+    color: var(--color-secondary);
+  }
+  .upvote {
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 9px solid var(--color-secondary);
+    margin: auto;
+    margin-bottom: 3px;
+    transition: all 0.1s ease-in-out;
+  }
+  .description {
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #555;
+    margin: 0 14px;
+  }
+  .description.hidden {
+    height: 3em;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .mask {
+    position: absolute;
+    z-index: 2;
+    box-shadow: inset 0px -51px 33px -37px var(--background-primary);
+    transform: translateY(-4em);
+    height: 3em;
+    width: 100%;
+  }
+  .close {
+    cursor: pointer;
+    text-decoration: none;
+    background-color: var(--background-primary);
+    color: var(--color-primary);
+    display: inline-block;
+  }
+  .close.hidden {
+    visibility: hidden;
+  }
+  .expand {
+    display: block;
+    text-align: center;
+    font-size: 3em;
+    cursor: pointer;
+  }
+  .centralize {
+    width: 340px;
+    margin: 10px auto;
+  }
+</style>
+
+<div class="request">
+  <header>
+    <div class="points button" on:click="{show}">
+      <div class="upvote"></div>
+      {parseInt(data.msatoshi/1000)}
+    </div>
+    <h2 on:click="{show}">{data.name}</h2>
+    <button class="close" class:hidden="{!opened}" on:click="{hide}">-</button>
+  </header>
+  {#if opened}
+  <div class="description full">{data.description}</div>
+  <div>
+    <div class="centralize">
+      <h3>Show your support!</h3>
+      Send satoshis to this
+      <a
+        href="https://github.com/fiatjaf/awesome-lnurl#wallets"
+        target="_blank"
+      >
+        lnurl-pay
+      </a>
+      address to give more weight to this feature request:
+    </div>
+    <LNURLPayCall
+      method="contribute"
+      payload="{{key, idx}}"
+      contract="{CONTRACT}"
+      minSendable="100"
+    />
+  </div>
+  {:else}
+  <div class="description hidden" on:click="{show}">
+    {data.description}
+  </div>
+  <div class="mask" on:click="{show}"></div>
+  <span class="expand" on:click="{show}">...</span>
+  {/if}
+</div>

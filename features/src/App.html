@@ -1,0 +1,37 @@
+<!-- @format -->
+
+<script>
+  import {setContext} from 'svelte'
+  import Router from 'svelte-spa-router'
+  import {Contract} from 'etleneum'
+
+  import {NAME, CONTRACT} from './constants'
+  import Domain from './Domain.html'
+  import Nothing from './Nothing.html'
+  import Foot from '../../components/Footer.html'
+
+  setContext('contract', Contract(CONTRACT))
+
+  const routes = {
+    '/': Nothing,
+    '/:key': Domain
+  }
+</script>
+
+<style>
+  :global(body) {
+    width: 990px;
+  }
+  footer {
+    width: 100%;
+    margin-top: 180px;
+    padding-top: 18px;
+    font-size: 0.9rem;
+  }
+  footer a {
+    color: var(--emphasis-rare);
+  }
+</style>
+
+<Router {routes} />
+<Foot name="{NAME}" contract="{CONTRACT}" />
