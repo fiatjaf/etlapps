@@ -89,8 +89,12 @@
     justify-content: space-between;
     align-items: center;
   }
+  header a {
+    display: flex;
+    align-items: center;
+  }
   header img {
-    height: 1em;
+    height: 3em;
   }
   h1 {
     color: var(--emphasis-rare);
@@ -100,8 +104,8 @@
     color: inherit;
   }
   main {
-    margin: 43px auto;
-    position: relative;
+    margin: 0 auto 43px;
+    padding-top: 0;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -170,7 +174,10 @@
     <form on:submit="{createRequest}">
       <label>
         Title:
-        <input bind:value="{request.name}" />
+        <input
+          bind:value="{request.name}"
+          placeholder="Implement support for something"
+        />
       </label>
       <label>
         Satoshis to include:
