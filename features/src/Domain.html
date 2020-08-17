@@ -22,7 +22,7 @@
   var notfound = false
   var request = {...baseRequest}
   var call
-  var createElement
+  var elementCreate
 
   onMount(loadData)
 
@@ -33,20 +33,18 @@
   onMount(() => {
     return contract.stream(
       id => {
-        if (call.id === id) {
+        if (call && call.id === id) {
           call = null
           request = {...baseRequest}
-          toast.success('Call made successfully!')
         }
+        toast.success('Call made successfully!')
         loadData()
       },
       (id, errMessage) => {
-        if (call.id === id) {
-          toast.warning(`Your call failed: ${errMessage}`)
+        if (call && call.id === id) {
           call = null
-        } else {
-          toast.warning(`A call from someone else failed: ${errMessage}`)
         }
+        toast.warning(`Call failed: ${errMessage}`)
       }
     )
   })
@@ -58,9 +56,17 @@
       | .requests = if .requests == {} then [] else .requests end
       | .requests =
         ( .requests
+        | reduce .[] as $o
+          ( []
+          ; . +
+            [ { idx: ((.[-1].idx // 0) + 1)
+              } * $o
+            ]
+          )
         | map(select(.status == "open"))
         | sort_by(.msatoshi)
         | reverse
+        | map(.opened = false)
         )
       `)
       if (!data) throw new Error('not found')
@@ -78,7 +84,7 @@
       description: request.description
     })
     setTimeout(() => {
-      createElement.scrollIntoView()
+      elementCreate.scrollIntoView()
     }, 1)
   }
 </script>
@@ -154,15 +160,15 @@
   {:else if data}
   <section id="requests">
     <h2>Requested features</h2>
-    {#each data.requests as req, i}
+    {#each data.requests as req}
     <aside>
-      <Request data="{req}" key="{params.key}" idx="{i+1}" />
+      <Request data="{req}" key="{params.key}" bind:opened="{req.opened}" />
     </aside>
     {:else}
     <p>No open requests.</p>
     {/each}
   </section>
-  <div id="create" bind:this="{createElement}">
+  <div id="create" bind:this="{elementCreate}">
     {#if call}
     <PayToCall
       background="#ffffff"

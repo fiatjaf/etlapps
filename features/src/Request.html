@@ -4,9 +4,8 @@
   import LNURLPayCall from '../../components/LNURLPayCall.html'
 
   export let data
-  export let idx
   export let key
-  var opened = false
+  export var opened = false
 
   function show(e) {
     e.preventDefault()
@@ -116,7 +115,7 @@
     </div>
     <LNURLPayCall
       method="contribute"
-      payload="{{key, idx}}"
+      payload="{{key, idx: data.idx}}"
       contract="{CONTRACT}"
       minSendable="100000"
     />
