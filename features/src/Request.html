@@ -19,6 +19,12 @@
 </script>
 
 <style>
+  .request {
+    margin: 0.4rem;
+    padding: 0.7rem;
+    width: 95%;
+    background-color: var(--background-main);
+  }
   header {
     display: flex;
     justify-content: space-between;
@@ -60,8 +66,8 @@
   .mask {
     position: absolute;
     z-index: 2;
-    box-shadow: inset 0px -51px 33px -37px var(--background-primary);
-    transform: translateY(-4em);
+    box-shadow: inset 0px -55px 50px -30px var(--background-main);
+    transform: translateY(-3em);
     height: 3em;
   }
   .description,
@@ -71,8 +77,8 @@
   .close {
     cursor: pointer;
     text-decoration: none;
-    background-color: var(--background-primary);
-    color: var(--color-primary);
+    background-color: var(--background-main);
+    color: var(--color-main);
     display: inline-block;
   }
   .close.hidden {
@@ -82,6 +88,7 @@
     display: block;
     text-align: center;
     font-size: 3em;
+    line-height: 1em;
     cursor: pointer;
   }
   .centralize {
@@ -90,7 +97,7 @@
   }
 </style>
 
-<div class="request">
+<aside class="request">
   <header>
     <div class="points button" on:click="{show}">
       <div class="upvote"></div>
@@ -127,4 +134,4 @@
   <div class="mask" on:click="{show}"></div>
   <span class="expand" on:click="{show}">...</span>
   {/if}
-</div>
+</aside>
