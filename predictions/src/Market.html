@@ -279,11 +279,14 @@
       {capitalize(params.type)} {params.nshares} {params.side.toUpperCase()}
       share{#if params.nshares > 1}s{/if} for
       {Math.ceil(msatoshiDiff[params.type] / 1000)} sat{#if params.nshares > 1}
-      {#if params.type === 'buy'} &nbsp;(can profit up to
-      {Math.floor(canWin/1000)}){:else} &nbsp;({Math.ceil(each / 1000)}
-      each){/if}{/if}
+      &nbsp;({Math.ceil(each / 1000)} each){/if}
     </button>
-    <p><small>Make sure you trust the resolvers of this market before betting. If they are malicious they can cheat.</small></p>
+    <p>
+      <small
+        >Make sure you trust the resolvers of this market before betting. If
+        they are malicious they can cheat.</small
+      >
+    </p>
   </div>
 </form>
 {:else}
