@@ -32,6 +32,19 @@
     call = null
   }
 
+  function cssURL(data) {
+    if (!data) return ''
+
+    let u = new URL(data.url)
+    let url = u.protocol + '//' + u.host
+    var path
+    if (u.pathname.length && u.pathname[u.pathname.length - 1] === '/') {
+      path = u.pathname.slice(0, -2)
+    }
+    path += '/feature-requests-etleneum.css'
+    return url + path
+  }
+
   onMount(() => {
     return contract.stream(
       id => {
@@ -54,23 +67,23 @@
   async function loadData() {
     try {
       data = await contract.state(`
-        .["${params.key}"]
-      | .requests = if .requests == {} then [] else .requests end
-      | .requests =
-        ( .requests
-        | reduce .[] as $o
-          ( []
-          ; . +
-            [ { idx: ((.[-1].idx // 0) + 1)
-              } * $o
-            ]
+          .["${params.key}"]
+        | .requests = if .requests == {} then [] else .requests end
+        | .requests =
+          ( .requests
+          | reduce .[] as $o
+            ( []
+            ; . +
+              [ { idx: ((.[-1].idx // 0) + 1)
+                } * $o
+              ]
+            )
+          | map(select(.status == "open"))
+          | sort_by(.msatoshi)
+          | reverse
+          | map(.opened = false)
           )
-        | map(select(.status == "open"))
-        | sort_by(.msatoshi)
-        | reverse
-        | map(.opened = false)
-        )
-      `)
+        `)
       if (!data) throw new Error('not found')
     } catch (err) {
       notfound = true
@@ -150,11 +163,19 @@
   }
 </style>
 
+<svelte:head>
+  {#if data}
+  <title>{data.name} Feature Requests</title>
+  <link rel="stylesheet" href="{cssURL(data)}" />
+  <link href="{data.logo}" rel="icon" />
+  {/if}
+</svelte:head>
+
 {#if data}
 <header>
   <a href="#/{params.key}">
     {#if data.logo}<img src="{data.logo}" />{/if}
-    <h1>{data.name}</h1>
+    <h1>&nbsp;{data.name}</h1>
   </a>
   <a href="{data.url}" target="_blank">Visit website</a>
 </header>
