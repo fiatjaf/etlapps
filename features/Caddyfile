@@ -1,0 +1,10 @@
+{
+  admin off
+}
+
+http://localhost:8484
+
+root * static
+try_files {path} /index.html
+file_server
+log
