@@ -35,6 +35,9 @@
     cursor: pointer;
     max-width: 300px;
   }
+  .opened h2 {
+    cursor: auto;
+  }
   h3 {
     text-align: center;
   }
@@ -51,6 +54,14 @@
     margin: auto;
     margin-bottom: 3px;
     transition: all 0.1s ease-in-out;
+  }
+  .issue_number {
+    color: var(--color-secondary);
+    font-size: 75%;
+    opacity: 0.3;
+  }
+  .opened .issue_number {
+    opacity: 0.7;
   }
   .description {
     white-space: pre-wrap;
@@ -80,9 +91,10 @@
     background-color: var(--background-main);
     color: var(--color-main);
     display: inline-block;
-  }
-  .close.hidden {
     visibility: hidden;
+  }
+  .opened .close {
+    visibility: visible;
   }
   .expand {
     display: block;
@@ -97,14 +109,16 @@
   }
 </style>
 
-<aside class="request">
+<aside class="request" class:opened>
   <header>
     <div class="points button" on:click="{show}">
       <div class="upvote"></div>
       {parseInt(data.msatoshi/1000)}
     </div>
-    <h2 on:click="{show}">{data.name}</h2>
-    <button class="close" class:hidden="{!opened}" on:click="{hide}">-</button>
+    <h2 on:click="{show}">
+      {data.name} <span class="issue_number">#{data.idx}</span>
+    </h2>
+    <button class="close" on:click="{hide}">-</button>
   </header>
   {#if opened}
   <div class="description full">{data.description}</div>
