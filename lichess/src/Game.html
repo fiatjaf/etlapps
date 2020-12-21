@@ -82,6 +82,11 @@
       if (r.status === 404) {
         throw new Error('404')
       }
+
+      res = await r.text()
+      try {
+        res = atob(res)
+      } catch (err) {}
     } catch (err) {
       // a 404 will produce a bizarre CORS error here
       if (
@@ -96,8 +101,6 @@
         return
       }
     }
-
-    res = await r.text()
 
     gamestarted = true
 
@@ -223,9 +226,7 @@
           here).
         </li>
         <li>Play.</li>
-        <li>
-          If you win, come back here to this page to redeem your prize.
-        </li>
+        <li>If you win, come back here to this page to redeem your prize.</li>
       </ol>
       {:else}
       <form on:submit="{acceptChallenge}">
@@ -248,9 +249,7 @@
         >
         on another tab to play.
       </li>
-      <li>
-        If you win, come back here to this page to redeem your prize.
-      </li>
+      <li>If you win, come back here to this page to redeem your prize.</li>
     </ol>
     <img src="/initial.png" />
     {:else if !winner && !draw}
@@ -263,16 +262,14 @@
         >
         on another tab to play.
       </li>
-      <li>
-        If you win, come back here to this page to redeem your prize.
-      </li>
+      <li>If you win, come back here to this page to redeem your prize.</li>
     </ol>
     <img src="/initial.png" />
     {:else if winner || draw}
     <div id="endgame">
       <iframe
         src="https://lichess.org/embed/{gameid}?theme=auto&bg=auto"
-        style="width: 400px; height: 444px;"
+        style="width: 400px; height: 444px"
         frameborder="0"
       ></iframe>
       <div>
@@ -283,9 +280,7 @@
             'white' : 'black')} has lost.
           </span>
           {:else if draw}
-          <span>
-            No one has won.
-          </span>
+          <span> No one has won. </span>
           {/if}
         </p>
 
@@ -312,9 +307,7 @@
               >. Just use the same login method.
             </p>
             {:else}
-            <p>
-              Login to extract your satoshis from this game.
-            </p>
+            <p>Login to extract your satoshis from this game.</p>
             <div id="login">
               <Auth background="#ffffff" qrsize="300" />
             </div>
