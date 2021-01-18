@@ -5,11 +5,11 @@
 
 <style>
   footer {
+    margin-top: 2em;
     padding-top: 3em;
     padding-bottom: 3em;
   }
 </style>
-
 
 <footer class="bg-gray">
   <div class="container grid-lg text-center">
@@ -18,7 +18,8 @@
       is an
       <a href="https://etleneum.com/#/contract/{contract}" target="_blank">
         Etleneum contract
-      </a>.
+      </a>
+      .
     </p>
     <p>
       All its core functionalities are defined there within visible and
