@@ -8,7 +8,7 @@
   --emphasis-rare: #f25042;
 }
 
-* {
+/* * {
   box-sizing: border-box;
 }
 html {
@@ -18,8 +18,8 @@ html {
   font-size: 150%;
   background-color: var(--background-main);
   color: var(--color-main);
-}
-body {
+} */
+/* body {
   width: 800px;
   max-width: 98%;
   padding: 20px;
@@ -65,7 +65,7 @@ button:hover,
 }
 a.button {
   text-decoration: none;
-}
+} */
 
 .toastify { max-width: 100%; }
 .toastify pre, .toastify em {
@@ -76,3 +76,7 @@ a.button {
 .toast-warning { background: #cfdb6e !important; }
 .toast-error { background: #db6e6e!important; }
 .toast-success { background: #6edb91!important; }
+
+.completion {
+  padding: 1.6rem;
+}
