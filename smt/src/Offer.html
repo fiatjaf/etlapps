@@ -21,7 +21,7 @@
   async function loadOffer() {
     try {
       offer = await contract.state(
-        `[.open.${params.offer_id}] + [.closed.${params.offer_id}] | .[0]`
+        `[.open["${params.offer_id}"]] + [.closed["${params.offer_id}"]] | .[0]`
       )
       offer.completions = offer.completions || {}
       bounty = Object.keys(offer.bounty).reduce(
