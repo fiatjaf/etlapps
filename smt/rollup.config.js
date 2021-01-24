@@ -7,32 +7,36 @@ import globals from 'rollup-plugin-node-globals'
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import {terser} from 'rollup-plugin-terser'
-import css from 'rollup-plugin-css-only';
+import css from 'rollup-plugin-css-only'
 
-import livereload from 'rollup-plugin-livereload';
+import livereload from 'rollup-plugin-livereload'
 
 // const production = !!process.env.PRODUCTION
-const production = !process.env.ROLLUP_WATCH;
+const production = !process.env.ROLLUP_WATCH
 
 function serve() {
-	let server;
+  let server
 
-	function toExit() {
-		if (server) server.kill(0);
-	}
+  function toExit() {
+    if (server) server.kill(0)
+  }
 
-	return {
-		writeBundle() {
-			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-				stdio: ['ignore', 'inherit', 'inherit'],
-				shell: true
-			});
+  return {
+    writeBundle() {
+      if (server) return
+      server = require('child_process').spawn(
+        'npm',
+        ['run', 'start', '--', '--dev'],
+        {
+          stdio: ['ignore', 'inherit', 'inherit'],
+          shell: true
+        }
+      )
 
-			process.on('SIGTERM', toExit);
-			process.on('exit', toExit);
-		}
-	};
+      process.on('SIGTERM', toExit)
+      process.on('exit', toExit)
+    }
+  }
 }
 
 export default {
@@ -46,12 +50,12 @@ export default {
   plugins: [
     json(),
     svelte({
-			compilerOptions: {
-				// enable run-time checks when not in production
-				dev: !production
-			}
-		}),
-    css({ output: 'bundle.css' }),
+      compilerOptions: {
+        // enable run-time checks when not in production
+        dev: !production
+      }
+    }),
+    css({output: 'bundle.css'}),
 
     // If you have external dependencies installed from
     // npm, you'll most likely need these plugins. In
@@ -59,11 +63,11 @@ export default {
     // consult the documentation for details:
     // https://github.com/rollup/rollup-plugin-commonjs
     resolve({
-			browser: true,
-			dedupe: ['svelte']
-		}),
-		builtins(),
-		globals(),
+      browser: true,
+      dedupe: ['svelte']
+    }),
+    builtins(),
+    globals(),
     resolve({
       browser: true,
       dedupe: importee =>
@@ -75,12 +79,12 @@ export default {
     }),
 
     // In dev mode, call `npm run start` once
-		// the bundle has been generated
-		!production && serve(),
+    // the bundle has been generated
+    !production && serve(),
 
-		// Watch the `public` directory and refresh the
-		// browser on changes when not in production
-		!production && livereload('static'),
+    // Watch the `public` directory and refresh the
+    // browser on changes when not in production
+    !production && livereload('static'),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify

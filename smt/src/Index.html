@@ -1,48 +1,48 @@
 <script>
-  import { onMount, getContext } from "svelte";
+  import {onMount, getContext} from 'svelte'
 
-  import account from "../../components/etleneumAccountStore";
-  import * as toast from "../../components/toast";
-  import PayToCall from "../../components/PayToCall.svelte";
-  import Item from "./Item.svelte";
-  import Auth from "../../components/Auth.svelte";
+  import account from '../../components/etleneumAccountStore'
+  import * as toast from '../../components/toast'
+  import PayToCall from '../../components/PayToCall.html'
+  import Item from './Item.html'
+  import Auth from '../../components/Auth.html'
 
-  const contract = getContext("contract");
-  const kbaccounts = getContext("kbaccounts");
+  const contract = getContext('contract')
+  const kbaccounts = getContext('kbaccounts')
 
-  onMount(loadOffers);
+  onMount(loadOffers)
 
-  var offers = [];
-  var creating = { satoshis: 1000, payload: {} };
-  var call;
+  var offers = []
+  var creating = {satoshis: 1000, payload: {}}
+  var call
 
   async function loadOffers() {
     try {
       offers = await contract.state(
         `.open | map_values(select(. > 0)) | map_values({desc, head, total: ((.bounty | map(.) | add)), voters, created_at}) | to_entries | map(.value.id = .key | .value) | sort_by(.created_at) | reverse`
-      );
+      )
     } catch (err) {
-      toast.error(`Failed to load open offers: ${err}`);
+      toast.error(`Failed to load open offers: ${err}`)
     }
   }
 
   async function create(e) {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
       call = await contract.prepareCall(
-        "create",
+        'create',
         parseInt(creating.satoshis) * 1000,
         creating.payload,
         $account.session
-      );
+      )
 
       call.stop = contract.stream(
-        (id) => {
+        id => {
           if (id === call.id) {
-            toast.success("Bounty created!");
-            call = null;
-            creating = { satoshis: 1000, payload: {} };
+            toast.success('Bounty created!')
+            call = null
+            creating = {satoshis: 1000, payload: {}}
             // setTimeout(call.stop, 1);
             // loadBanner();
             loadOffers()
@@ -50,24 +50,24 @@
         },
         (id, err) => {
           if (id === call.id) {
-            toast.warning("Error: " + err.message);
-            setTimeout(call.stop, 1);
+            toast.warning('Error: ' + err.message)
+            setTimeout(call.stop, 1)
           }
         }
-      );
+      )
     } catch (err) {
-      toast.warning(`Failed to create bounty: ${err}`);
+      toast.warning(`Failed to create bounty: ${err}`)
     }
   }
 
   function cancel() {
-    call.stop();
-    call = null;
+    call.stop()
+    call = null
   }
 </script>
 
 <style>
-  main{
+  main {
     margin-bottom: 3rem;
   }
 
