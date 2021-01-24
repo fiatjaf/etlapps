@@ -1,13 +1,32 @@
 <script>
+  import {push} from 'svelte-spa-router'
+
   export let title
   export let head
   export let body
+
+  function values(row) {
+    var v = []
+    for (let k in row) {
+      if (k !== 'id') {
+        v.push(row[k])
+      }
+    }
+    return v
+  }
 </script>
 
 <style>
   section {
     margin-top: 2em;
     margin-bottom: 3em;
+  }
+
+  tr {
+    cursor: pointer;
+  }
+  tr:hover {
+    background-color: #eff7ef;
   }
 </style>
 
@@ -23,8 +42,8 @@
     </thead>
     <tbody>
       {#each body as row}
-      <tr>
-        {#each Object.values(row) as val}
+      <tr on:click="{() => push(`/${row.id}`)}">
+        {#each values(row) as val}
         <td>{val}</td>
         {/each}
       </tr>
