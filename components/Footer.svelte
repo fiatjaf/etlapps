@@ -1,0 +1,22 @@
+<!-- @format -->
+
+<script>
+  export let name
+  export let contract
+</script>
+
+<style>
+  footer{
+    margin-top: 2em;
+    padding: 1em auto;
+    background: pink;
+  }
+</style>
+
+<footer>
+  <b>{name}</b> is an
+  <a href="https://etleneum.com/#/contract/{contract}" target="_blank"
+    >Etleneum contract</a
+  >. All its core functionalities are defined there within visible and immutable
+  code you should read before calling methods here.
+</footer>
