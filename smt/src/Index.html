@@ -19,7 +19,7 @@
   async function loadOffers() {
     try {
       offers = await contract.state(
-        `.open | map_values(select(. > 0)) | map_values({desc, head, total: ((.bounty | map(.) | add)), voters, created_at}) | to_entries | map(.value.id = .key | .value) | sort_by(.created_at) | reverse`
+        `.open | map_values(select(. > 0)) | map_values({desc, head, total: ((.bounty | map(.) | add)), voters, created_at}) | to_entries | map(.value.id = .key | .value) | sort_by([.total, .created_at]) | reverse`
       )
     } catch (err) {
       toast.error(`Failed to load open offers: ${err}`)
