@@ -2,7 +2,6 @@
 
 <script>
   import {afterUpdate} from 'svelte'
-  import {readable} from 'svelte/store'
   import * as toast from './toast'
   import QR from 'svelte-kjua'
   import PromiseWindow from 'promise-window'

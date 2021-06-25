@@ -4,27 +4,64 @@
   import {createEventDispatcher} from 'svelte'
   import QR from 'svelte-kjua'
 
+  import store from './etleneumAccountStore'
+
   const dispatch = createEventDispatcher()
 
   export let invoice
   export let color = '#333'
   export let background = 'transparent'
 
-  let hrp = invoice
-    .split('1')
-    .slice(0, -1)
-    .join('')
+const MULTIPLIERS = {
+  m: 100000000,
+  u: 100000,
+  n: 100,
+  p: 0.1,
+}
+
+  let hrp = invoice.split('1').slice(0, -1).join('')
   let numbers = 0
   try {
     numbers = hrp.match(/\d+/)[0].length
   } catch (err) {}
   let multiplier = hrp[hrp.length - 1]
-  let isNegligible =
-    (multiplier === 'n' && numbers <= 3) || (multiplier === 'p' && numbers <= 5)
+  let msatoshi = Math.round(MULTIPLIERS[multiplier] * numbers)
+  let isNegligible = msatoshi < 10
 
   function dispatchCancel(e) {
     e.preventDefault()
     dispatch('cancel')
+  }
+
+  async function payWithBalance(e) {
+    e.preventDefault()
+
+    let {method, msatoshi, payload} = nextcall
+
+    if (!method) {
+      toast.warning('you must select a method to call!')
+      return
+    }
+
+    let qs = `?session=${$store.session}&use-balance=true`
+
+    let r = await fetch('/~/contract/' + params.ctid + '/call' + qs, {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        method,
+        msatoshi,
+        payload
+      })
+    })
+    let resp = await r.json()
+
+    if (!resp.ok) {
+      toast.warning(resp.error)
+      return
+    }
+
+    resetNextCall()
   }
 </script>
 
@@ -49,8 +86,11 @@
     font-size: 80%;
     margin: 0 20%;
   }
-  .cancel {
+  button {
     margin-top: 23px;
+  }
+  .button-wrapper {
+    display: flex;
   }
 </style>
 
@@ -66,5 +106,10 @@
     <QR value="{invoice}" color="{color}" />
   </a>
   <div class="wrap">{invoice}</div>
-  <button class="cancel" on:click="{dispatchCancel}">Cancel</button>
+  <div class="button-wrapper">
+    {#if $store.balance >= msatoshi}
+    <button on:click="{payWithBalance}">Pay with Etleneum balance</button>
+    {/if}
+    <button on:click="{dispatchCancel}">Cancel</button>
+  </div>
 </div>
