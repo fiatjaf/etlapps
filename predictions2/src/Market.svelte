@@ -35,7 +35,22 @@
     })
   })
 
-  var market
+  const costToBuy = (side, nShares) =>
+    calcBalance(
+      market.factor,
+      currentYes + (side === 'yes' ? nShares : 0),
+      currentNo + (side === 'no' ? nShares : 0)
+    ) - market.balance
+
+  const costToSell = (side, nShares) =>
+    market.balance -
+    calcBalance(
+      market.liquidity,
+      currentYes - (side === 'yes' ? nShares : 0),
+      currentNo - (side === 'no' ? nShares : 0)
+    )
+
+  var market, currentYes, currentNo, nSharesToBuyUntil99Percent
   marketsStore.subscribe(markets => {
     if (markets[marketId]) {
       if (market) {
@@ -44,28 +59,29 @@
         market = {id: marketId, ...markets[marketId]}
         params.nshares = 1
       }
+
+      currentYes = countShares(market, 'yes')
+      currentNo = countShares(market, 'no')
     }
   })
 
+  $: nSharesToBuyUntil99Percent = (side => {
+    var i = 0
+    while (true) {
+      i++
+      let cost = costToBuy(side, i) / i
+      if (cost > 0.98 * sharePrice) break
+    }
+    return i == 1 ? 2 : i
+  })(params.side)
   $: sharesMax =
     market &&
-    (params.type === 'buy' ? 100 : market.shares[params.side][$account.id])
+    (params.type === 'buy'
+      ? nSharesToBuyUntil99Percent
+      : market.shares[params.side][$account.id])
   $: msatoshiDiff = market && {
-    buy:
-      calcBalance(
-        market.factor,
-        countShares(market, 'yes') +
-          (params.side === 'yes' ? params.nshares : 0),
-        countShares(market, 'no') + (params.side === 'no' ? params.nshares : 0)
-      ) - market.balance,
-    sell:
-      market.balance -
-      calcBalance(
-        market.liquidity,
-        countShares(market, 'yes') -
-          (params.side === 'yes' ? params.nshares : 0),
-        countShares(market, 'no') - (params.side === 'no' ? params.nshares : 0)
-      )
+    buy: costToBuy(params.side, params.nshares),
+    sell: costToSell(params.side, params.nshares)
   }
   $: each = msatoshiDiff && msatoshiDiff[params.type] / params.nshares
 
@@ -220,12 +236,6 @@
         {Math.ceil(msatoshiDiff[params.type] / 1000)} sat{#if params.nshares > 1}
           &nbsp;({Math.ceil(each / 1000)} each){/if}
       </button>
-      <p>
-        <small
-          >Make sure you trust the resolvers of this market before betting. If
-          they are malicious they can cheat.</small
-        >
-      </p>
     </div>
   </form>
 {/if}

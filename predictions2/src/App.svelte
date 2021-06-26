@@ -1,5 +1,4 @@
 <!-- @format -->
-
 <script>
   import {onMount, setContext} from 'svelte'
   import {writable} from 'svelte/store'
@@ -11,7 +10,7 @@
   import * as toast from '../../common/toast'
   import Foot from '../../components/Footer.svelte'
 
-  const CONTRACT = 'cjc1jv1gex4'
+  const CONTRACT = 'c4w1e4r9na'
 
   const contract = Contract(CONTRACT)
   setContext('contract', contract)
@@ -29,7 +28,7 @@
 
   async function loadMarkets() {
     try {
-      var markets = await contract.state()
+      var markets = await contract.state('.open')
       if (Array.isArray(markets)) {
         markets = {}
       }
@@ -91,6 +90,17 @@
   })
 </script>
 
+<main>
+  <header>
+    <h1>
+      <a href="#/">Predictions #2</a>
+    </h1>
+    <p>Prediction markets with automated market makers.</p>
+  </header>
+  <main><Index /></main>
+</main>
+<Foot name="Predictions 2" contract={CONTRACT} />
+
 <style>
   :global(body) {
     max-width: 200vw;
@@ -116,16 +126,3 @@
     margin-left: 23px;
   }
 </style>
-
-<main>
-  <header>
-    <h1>
-      <a href="#/">Predictions #2</a>
-    </h1>
-    <p>
-      Prediction markets with automated market makers.
-    </p>
-  </header>
-  <main><Index /></main>
-</main>
-<Foot name="Predictions 2" contract="{CONTRACT}" />

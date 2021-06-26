@@ -23,17 +23,24 @@ export function calcBalance(factor, yesShares, noShares) {
   )
 }
 
-export function marketImpliedProbability(market, side) {
+function rawProbability(market, side) {
   let thisShares = countShares(market, side)
   let otherShares = countShares(market, side === 'yes' ? 'no' : 'yes')
   let totalShares = thisShares + otherShares
-  let b = factor * totalShares
+  let b = market.factor * totalShares
   let expThis = Math.exp(thisShares / b)
   let expOther = Math.exp(otherShares / b)
   let expSum = expThis + expOther
   let productSum = thisShares * expThis + otherShares * expOther
-  let prob =
+  return (
     b * Math.log(expSum) +
     (totalShares * expThis - productSum) / (totalShares * expSum)
-  return Math.round(prob * 100)
+  )
+}
+
+export function marketImpliedProbability(market, side) {
+  let prob = rawProbability(market, side)
+  let pain = prob + rawProbability(market, side === 'yes' ? 'no' : 'yes') - 1
+  let displayProb = prob - pain / 2
+  return Math.round(displayProb * 100)
 }

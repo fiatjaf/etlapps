@@ -28,7 +28,6 @@
   marketsStore.subscribe(markets => {
     marketList = Object.keys(markets)
       .map(id => ({id, ...markets[id]}))
-      .filter(({terms}) => terms.length > 20)
       .sort((a, b) => score(b) - score(a))
   })
 

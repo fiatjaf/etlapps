@@ -9,20 +9,29 @@
 
   const contract = getContext('contract')
 
+  let minDate = new Date()
+  minDate.setDate(minDate.getDate() + 1)
+  minDate = minDate.toISOString().split('T')[0]
+  let maxDate = new Date()
+  maxDate.setDate(maxDate.getDate() + 700)
+  maxDate = maxDate.toISOString().split('T')[0]
+
   var call
   const unsetCall = getContext('unset-call')
   onMount(() => {
     return unsetCall(() => {
       call = null
       create.terms = ''
-      create.factor = 0.02
+      create.date = ''
+      create.factor = 0.2
       create.maturation = Math.round(Date.now() / 1000 + 60 * 60 * 24 * 14)
     })
   })
 
   var create = {
-    factor: 0.02,
-    terms: ''
+    factor: 0.2,
+    terms: '',
+    date: ''
   }
 
   $: requiredMsatoshi = calcBalance(create.factor, 1, 1)
@@ -42,7 +51,7 @@
       'createmarket',
       requiredMsatoshi,
       {...create},
-      $account.session
+      $account.id ? $account.session : undefined
     )
 
     state.update(st => {
@@ -67,15 +76,21 @@
       />
       <small>People will bet on this resolving to a "yes" or "no".</small>
     </label>
+    <label>
+      <div>Event Date</div>
+      <input type="date" min={minDate} max={maxDate} bind:value={create.date} />
+      <small>People will bet on this resolving to a "yes" or "no".</small>
+    </label>
+    <!--
     <details>
       <summary>Advanced settings</summary>
       <label>
         <div>Liquidity factor</div>
         <input
           type="range"
-          min="1"
-          max="10"
-          step="1"
+          min="0.01"
+          max="0.1"
+          step="0.01"
           bind:value={create.factor}
         />
         <small
@@ -84,16 +99,17 @@
         >
       </label>
     </details>
+    !-->
     <div class="button-wrap">
-      {#if !(create.resolvers || $account.id)}
+      {#if !$account.id}
         <div>
           Login to your
           <a href="https://etleneum.com/" target="_blank">etleneum.com</a>
-          account to create this market -- or input custom resolver account ids.
+          account to create this market -- you'll get 1 share of each side.
           <Auth />
         </div>
       {/if}
-      <button disabled={!(create.resolvers || $account.id)}>
+      <button>
         Create for {Math.ceil(requiredMsatoshi / 1000)} sat
       </button>
     </div>
