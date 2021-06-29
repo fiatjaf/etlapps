@@ -12,12 +12,10 @@
     calcBalance,
     capitalize
   } from './helpers'
-  import MarketHeader from './MarketHeader.svelte'
 
-  export let marketId
+  export let market
 
   const contract = getContext('contract')
-  const marketsStore = getContext('markets')
 
   var params = {
     nshares: 1,
@@ -45,26 +43,13 @@
   const costToSell = (side, nShares) =>
     market.balance -
     calcBalance(
-      market.liquidity,
+      market.factor,
       currentYes - (side === 'yes' ? nShares : 0),
       currentNo - (side === 'no' ? nShares : 0)
     )
 
-  var market, currentYes, currentNo, nSharesToBuyUntil99Percent
-  marketsStore.subscribe(markets => {
-    if (markets[marketId]) {
-      if (market) {
-        market = {id: marketId, ...markets[marketId]}
-      } else {
-        market = {id: marketId, ...markets[marketId]}
-        params.nshares = 1
-      }
-
-      currentYes = countShares(market, 'yes')
-      currentNo = countShares(market, 'no')
-    }
-  })
-
+  $: currentYes = market && countShares(market, 'yes')
+  $: currentNo = market && countShares(market, 'no')
   $: nSharesToBuyUntil99Percent = (side => {
     var i = 0
     while (true) {
@@ -132,70 +117,66 @@
   }
 </script>
 
-{#if !market}
-  <p style="margin: 25px 20px">Loading market {marketId}...</p>
-{:else if call}
+{#if call}
   <div class="call">
     <PayToCall invoice={call.invoice} on:cancel={cancel} />
   </div>
 {:else}
   <form on:submit={exchange}>
-    <div
-      style="display: flex; justify-content: space-between; align-items: center"
-    >
-      <p>Making a bet on:</p>
-    </div>
-    <MarketHeader {market} />
-    {#if $account.id && (market.shares.yes[$account.id] || market.shares.no[$account.id])}
-      <label>
-        <div>Sell?</div>
-        <input
-          type="checkbox"
-          on:change={toggleSell}
-          style="display: block; margin: auto;"
-        />
+    <div class="wrap">
+      {#if $account.id && (market.shares.yes[$account.id] || market.shares.no[$account.id])}
+        <label>
+          <div>Sell?</div>
+          <input
+            type="checkbox"
+            on:change={toggleSell}
+            style="display: block; margin: auto;"
+          />
+          <small
+            >You can sell your shares and cash out your profit or minimize your
+            loss before the market resolves.</small
+          >
+        </label>
+      {/if}
+      <label on:click={e => e.preventDefault()} for="nothing">
+        <div>Side</div>
+        <div class="side-buttons">
+          <div>
+            {#if $account.id && market.shares.yes[$account.id]}
+              <small>balance: {market.shares.yes[$account.id]}</small>
+            {/if}
+            <button
+              class="yes"
+              class:active={params.side === 'yes'}
+              on:click={setSide('yes')}
+              disabled={params.type === 'sell' &&
+                !market.shares.yes[$account.id]}
+            >
+              YES
+            </button>
+          </div>
+          <div>
+            {#if $account.id && market.shares.no[$account.id]}
+              <small>balance: {market.shares.no[$account.id]}</small>
+            {/if}
+            <button
+              class="no"
+              class:active={params.side === 'no'}
+              on:click={setSide('no')}
+              disabled={params.type === 'sell' &&
+                !market.shares.no[$account.id]}
+            >
+              NO
+            </button>
+          </div>
+        </div>
         <small
-          >You can sell your shares and cash out your profit or minimize your
-          loss before the market resolves.</small
+          ><code>YES</code> means the question or statement
+          <em>"{market.terms}"</em> will be resolved as true, <code>NO</code> means
+          it will be resolved as false.</small
         >
       </label>
-    {/if}
-    <label on:click={e => e.preventDefault()} for="nothing">
-      <div>Side</div>
-      <div class="side-buttons">
-        <div>
-          {#if $account.id && market.shares.yes[$account.id]}
-            <small>balance: {market.shares.yes[$account.id]}</small>
-          {/if}
-          <button
-            class="yes"
-            class:active={params.side === 'yes'}
-            on:click={setSide('yes')}
-            disabled={params.type === 'sell' && !market.shares.yes[$account.id]}
-          >
-            YES
-          </button>
-        </div>
-        <div>
-          {#if $account.id && market.shares.no[$account.id]}
-            <small>balance: {market.shares.no[$account.id]}</small>
-          {/if}
-          <button
-            class="no"
-            class:active={params.side === 'no'}
-            on:click={setSide('no')}
-            disabled={params.type === 'sell' && !market.shares.no[$account.id]}
-          >
-            NO
-          </button>
-        </div>
-      </div>
-      <small
-        ><code>YES</code> means the question or statement
-        <em>"{market.terms}"</em> will be resolved as true, <code>NO</code> means
-        it will be resolved as false.</small
-      >
-    </label>
+    </div>
     <label>
       <div>Shares to {params.type}</div>
       <input
@@ -241,6 +222,14 @@
 {/if}
 
 <style>
+  form .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  form label {
+    margin: 10px 60px;
+  }
   .side-buttons {
     display: flex;
     justify-content: space-around;
@@ -256,11 +245,11 @@
     text-align: center;
   }
   .yes {
-    background-color: var(--emphasis);
+    background-color: var(--yes);
     color: white;
   }
   .no {
-    background-color: var(--emphasis-rare);
-    color: var(--color);
+    background-color: var(--no);
+    color: black;
   }
 </style>

@@ -67,19 +67,33 @@
   </div>
 {:else}
   <form on:submit={createMarket}>
-    <h1>Creating a market</h1>
     <label>
       <div>Decision</div>
-      <input
-        bind:value={create.terms}
-        placeholder="Will Ethereum 2.0 be launched before the end of 2020?"
-      />
-      <small>People will bet on this resolving to a "yes" or "no".</small>
+      <input bind:value={create.terms} placeholder="BIP300" />
+      <small
+        >People will bet on this resolving to a "yes" or "no". To bet means to
+        buy a share of <strong>"yes"</strong> or a share of
+        <strong
+          >"no"<strong
+            >. A share may cost anything
+            <strong>between 0 and 100 satoshis</strong> depending on the state
+            of the market. If the event happens, "yes" wins, otherwise "no"
+            wins. For each winning share the owner of that share gets paid
+            <strong>100 satoshis</strong>.</strong
+          ></strong
+        ></small
+      >
     </label>
     <label>
       <div>Event Date</div>
       <input type="date" min={minDate} max={maxDate} bind:value={create.date} />
-      <small>People will bet on this resolving to a "yes" or "no".</small>
+      <small
+        >This is the date in which this market will time out. For example, if
+        the decision is <strong
+          >"BIP300 will be activated on Bitcoin before the end of 2022"</strong
+        >
+        you should select <strong>"December 31, 2022"</strong> here.</small
+      >
     </label>
     <!--
     <details>

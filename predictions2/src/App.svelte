@@ -92,37 +92,8 @@
 
 <main>
   <header>
-    <h1>
-      <a href="#/">Predictions #2</a>
-    </h1>
-    <p>Prediction markets with automated market makers.</p>
+    <h1>Predictions #2</h1>
   </header>
   <main><Index /></main>
 </main>
 <Foot name="Predictions 2" contract={CONTRACT} />
-
-<style>
-  :global(body) {
-    max-width: 200vw;
-  }
-  main {
-    margin: 50px auto;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  header > h1 {
-    flex-grow: 99999999;
-    font-size: 4rem;
-  }
-  header > h1 a {
-    text-decoration: none;
-    color: var(--emphasis);
-  }
-  header > p {
-    flex-shrink: 99999999;
-    margin-left: 23px;
-  }
-</style>

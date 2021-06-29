@@ -1,11 +1,14 @@
 :root {
-  --background-main: #084887;
-  --color-main: #f7f5fb;
-  --background-secondary: #909cc2;
-  --color-secondary: #f7f5fb;
+  --background-main: beige;
+  --color-main: #444;
+  --background-secondary: whitesmoke;
+  --color-secondary: #222;
   --links: #f9ab55;
   --emphasis: #f58a07;
   --emphasis-rare: #f9ab55;
+
+  --yes: #58c392;
+  --no: #f97e4f;
 }
 
 form {
@@ -27,7 +30,7 @@ label {
   grid-template-rows: auto;
   grid-template-areas:
     'label-area input-area'
-    '. explanation-area';
+    'explanation-area explanation-area';
 }
 label > * {
   display: block;
