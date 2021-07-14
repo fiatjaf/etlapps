@@ -45,7 +45,12 @@
   {#if $account.id && !call}
     <div id="ask">
       <form on:submit={prepareQuestion}>
-        <label>Asking to: <input bind:value={target} /></label>
+        <label
+          >Asking to: <input
+            bind:value={target}
+            placeholder="Type a keybase.io username."
+          /></label
+        >
         <label
           >Paying:
           <input type="number" min="100" bind:value={sats} />
