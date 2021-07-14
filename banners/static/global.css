@@ -68,12 +68,23 @@ a.button {
   text-decoration: none;
 }
 
-.toastify { max-width: 100%; }
-.toastify pre, .toastify em {
+.toastify {
+  max-width: 100%;
+}
+.toastify pre,
+.toastify em {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-.toast-info { background: #726edb !important; }
-.toast-warning { background: #cfdb6e !important; }
-.toast-error { background: #db6e6e!important; }
-.toast-success { background: #6edb91!important; }
+.toast-info {
+  background: #726edb !important;
+}
+.toast-warning {
+  background: #cfdb6e !important;
+}
+.toast-error {
+  background: #db6e6e !important;
+}
+.toast-success {
+  background: #6edb91 !important;
+}

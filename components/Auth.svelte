@@ -1,8 +1,8 @@
-<!-- @format -->
+
 
 <script>
   import {afterUpdate} from 'svelte'
-  import * as toast from './toast'
+  import * as toast from '../common/toast'
   import QR from 'svelte-kjua'
   import PromiseWindow from 'promise-window'
   import store, {account} from './etleneumAccountStore'

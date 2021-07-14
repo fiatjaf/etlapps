@@ -2,9 +2,9 @@
 
 import {readable} from 'svelte/store'
 import flatten from 'flatten'
-import {Contract, Account} from 'etleneum-client'
+import {Contract, Account} from 'etleneum'
 
-import * as toast from '../../helpers/toast'
+import * as toast from '../../common/toast'
 import {CONTRACT} from './constants'
 
 const s4aContract = Contract(CONTRACT)

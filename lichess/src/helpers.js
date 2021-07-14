@@ -4,9 +4,7 @@ import {writable} from 'svelte/store'
 export const state = writable({})
 
 export function sha256(v) {
-  return shajs('sha256')
-    .update(v)
-    .digest('hex')
+  return shajs('sha256').update(v).digest('hex')
 }
 
 export function getBaseSecret() {

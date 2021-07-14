@@ -1,9 +1,0 @@
-{
-	"dependencies": {
-		"bech32": "^1.1.4",
-		"etleneum": "latest",
-		"promise-window": "^1.2.1",
-		"svelte-kjua": "1.2.0",
-		"toastify-js": "^1.9.0"
-	}
-}

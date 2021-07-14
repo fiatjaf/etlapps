@@ -1,0 +1,28 @@
+<script>
+  import * as toast from '../../common/toast'
+  import {account, s4a, kad} from './stores'
+  import Question from './Question.svelte'
+
+  export let params
+
+  $: questions = $s4a.byAsker[params.etlaccount] || []
+  $: keybase = $kad.kbFromId[params.etlaccount]
+</script>
+
+<h2>
+  {params.etlaccount}{#if keybase}
+    (<a href="#/a/{keybase}">{keybase}</a>
+    <a href="https://keybase.io/{keybase}" target="_blank"
+      ><img src="/keybase.png" alt="keybase icon" /></a
+    >){/if}
+</h2>
+
+{#if !questions}
+  <div class="center">loading</div>
+{:else}
+  <div>
+    {#each questions as id (id)}
+      <Question question={$s4a.byId[id]} />
+    {/each}
+  </div>
+{/if}
