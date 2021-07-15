@@ -28,7 +28,7 @@ const bundleEntry = appName => ({
 
     commonjs(),
 
-    css({output: `${appName}/static/bundle.css`}),
+    css({output: 'bundle.css'}),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
@@ -39,14 +39,16 @@ const bundleEntry = appName => ({
   }
 })
 
-export default [
-  'banners',
-  'chainmarket',
-  'smt',
-  'features',
-  'lichess',
-  's4a',
-  'kad',
-  'predictions',
-  'predictions2'
-].map(bundleEntry)
+export default process.env.APPNAME
+  ? bundleEntry(process.env.APPNAME)
+  : [
+      'banners',
+      'chainmarket',
+      'smt',
+      'features',
+      'lichess',
+      's4a',
+      'kad',
+      'predictions',
+      'predictions2'
+    ].map(bundleEntry)

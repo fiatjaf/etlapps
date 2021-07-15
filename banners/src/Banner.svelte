@@ -1,6 +1,5 @@
 <script>
   import {onMount, getContext} from 'svelte'
-  import {readable} from 'svelte/store'
   import PayToCall from '../../components/PayToCall.svelte'
 
   import * as toast from '../../common/toast'
@@ -44,7 +43,7 @@
   async function loadBanner() {
     try {
       banner = await contract.state(
-        `.current_ads.${params.banner_id} as $c | .ad_queue.${params.banner_id} as $q | .banners.${params.banner_id} | .current = $c | .queue = if $q then $q else [] end`
+        `.current_ads.${params.banner_id} as $c | .ad_queue.${params.banner_id} as $q | .banners.${params.banner_id} | .current = $c | .queue = if ($q | length) > 0 then $q else [] end`
       )
     } catch (err) {
       toast.error(`Failed to load banner ${params.banner_id}: ${err}`)

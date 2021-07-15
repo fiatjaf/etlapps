@@ -72,7 +72,7 @@
     {#if $s4a.lastUnanswered.length > 0}
       <section>
         <h2>Last unanswered questions</h2>
-        {#each $s4a.lastUnanswered as id (id)}
+        {#each $s4a.lastUnanswered as id}
           <Question question={$s4a.byId[id]} />
         {/each}
       </section>
@@ -80,7 +80,7 @@
     {#if $s4a.lastAnswers.length > 0}
       <section>
         <h2>Last answers</h2>
-        {#each $s4a.lastAnswers as id (id)}
+        {#each $s4a.lastAnswers as id}
           <Question question={$s4a.byId[id]} />
         {/each}
       </section>

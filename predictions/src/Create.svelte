@@ -11,8 +11,9 @@
   const contract = getContext('contract')
 
   var call
+  const unsetCall = getContext('unset-call')
   onMount(() => {
-    return getContext('unset-call')(() => {
+    return unsetCall(() => {
       call = null
       create.terms = ''
       create.resolvers = ['ay81i7dw7']

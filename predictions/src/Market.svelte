@@ -29,8 +29,9 @@
   var increasingLiquidity = 0
 
   var call
+  const unsetCall = getContext('unset-call')
   onMount(() => {
-    return getContext('unset-call')(() => {
+    return unsetCall(() => {
       call = null
       increasingLiquidity = 0
       params.type = 'buy'

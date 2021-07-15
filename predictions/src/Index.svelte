@@ -5,7 +5,6 @@
   import Market from './Market.svelte'
   import {countShares, marketImpliedProbability} from './helpers'
 
-  import * as toast from '../../common/toast.js'
   import account from '../../components/etleneumAccountStore'
   import Auth from '../../components/Auth.svelte'
 
@@ -44,8 +43,9 @@
     )
   }
 
+  const unsetCall = getContext('unset-call')
   onMount(() => {
-    return getContext('unset-call')(() => {
+    return unsetCall(() => {
       createOpen = null
     })
   })

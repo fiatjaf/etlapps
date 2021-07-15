@@ -1,5 +1,3 @@
-
-
 <script>
   import {createEventDispatcher} from 'svelte'
   import QR from 'svelte-kjua'
@@ -12,12 +10,12 @@
   export let color = '#333'
   export let background = 'transparent'
 
-const MULTIPLIERS = {
-  m: 100000000,
-  u: 100000,
-  n: 100,
-  p: 0.1,
-}
+  const MULTIPLIERS = {
+    m: 100000000,
+    u: 100000,
+    n: 100,
+    p: 0.1
+  }
 
   let hrp = invoice.split('1').slice(0, -1).join('')
   let numbers = 0
@@ -65,6 +63,26 @@ const MULTIPLIERS = {
   }
 </script>
 
+<div class="center">
+  <p>Pay to finish the operation.</p>
+  {#if isNegligible}
+    <small
+      title="For anti-spam reasons every method call on Etleneum is always charged a small fee, unrelated to the amount of satoshis included in the call."
+      >Why do I have to pay?</small
+    >
+  {/if}
+  <a href="lightning:{invoice}" style="background-color: {background}">
+    <QR value={invoice} {color} />
+  </a>
+  <div class="invoice">{invoice}</div>
+  <div class="button-wrapper">
+    {#if $store.balance >= msatoshi}
+      <button on:click={payWithBalance}>Pay with Etleneum balance</button>
+    {/if}
+    <button on:click={dispatchCancel}>Cancel</button>
+  </div>
+</div>
+
 <style>
   .center {
     display: flex;
@@ -76,7 +94,7 @@ const MULTIPLIERS = {
     cursor: pointer;
     cursor: help;
   }
-  .wrap {
+  .invoice {
     word-wrap: break-word;
     white-space: pre-wrap;
     word-break: break-all;
@@ -93,23 +111,3 @@ const MULTIPLIERS = {
     display: flex;
   }
 </style>
-
-<div class="center">
-  <p>Pay to finish the operation.</p>
-  {#if isNegligible}
-  <small
-    title="For anti-spam reasons every method call on Etleneum is always charged a small fee, unrelated to the amount of satoshis included in the call."
-    >Why do I have to pay?</small
-  >
-  {/if}
-  <a href="lightning:{invoice}" style="background-color: {background}">
-    <QR value="{invoice}" color="{color}" />
-  </a>
-  <div class="wrap">{invoice}</div>
-  <div class="button-wrapper">
-    {#if $store.balance >= msatoshi}
-    <button on:click="{payWithBalance}">Pay with Etleneum balance</button>
-    {/if}
-    <button on:click="{dispatchCancel}">Cancel</button>
-  </div>
-</div>

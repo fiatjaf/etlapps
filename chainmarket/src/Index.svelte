@@ -228,7 +228,7 @@
         Amount to send (sat):
         <input
           step="1"
-          min="1"
+          min="0"
           type="number"
           bind:value={creating.target_sat}
         />
