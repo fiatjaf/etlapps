@@ -1,15 +1,26 @@
 <script>
+  import dateFormat from 'dateformat'
+
   import {countShares, marketImpliedProbability} from './helpers'
 
   export let market
+
+  $: eventDate = market && new Date(market.date * 1000)
 </script>
 
-<div class="terms">{market.terms}</div>
+<div class="terms">
+  <h2>{market.terms}</h2>
+  <p>
+    Event scheduled to happen at <span class="date"
+      >{dateFormat(eventDate, 'mmmm d, yyyy')}</span
+    >.
+  </p>
+</div>
 <aside>
   <code>{countShares(market, 'yes')} yes</code>
   <code>{countShares(market, 'no')} no</code>
   <code
-    >created: {new Date(market.created * 1000)
+    >creation: {new Date(market.created * 1000)
       .toISOString()
       .split('T')[0]}</code
   >
@@ -22,10 +33,8 @@
     >
     <code>{market.nexchanges} exchanges</code>
   {/if}
-  {#if Object.keys(market.votes).length}
-    <code>{Object.keys(market.votes).length} votes cast</code>
-  {/if}
   <code>{parseInt(market.balance / 1000)} sat</code>
+  <code>event: {new Date(market.date * 1000).toISOString().split('T')[0]}</code>
 </aside>
 <div>
   <div class="yes">
@@ -41,6 +50,14 @@
 <style>
   .terms {
     width: 40%;
+    padding: 5px;
+  }
+  .terms h2 {
+    margin: 0 0 12px;
+  }
+  .terms .date {
+    text-decoration: underline;
+    font-weight: bold;
   }
   aside {
     display: flex;

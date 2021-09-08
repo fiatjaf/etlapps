@@ -1,5 +1,6 @@
 <script>
   import {onMount, getContext} from 'svelte'
+  import dateFormat from 'dateformat'
 
   import PayToCall from '../../components/PayToCall.svelte'
   import Auth from '../../components/Auth.svelte'
@@ -8,9 +9,10 @@
   import {
     state,
     sharePrice,
+    capitalize,
     countShares,
     calcBalance,
-    capitalize
+    weekSeconds
   } from './helpers'
 
   export let market
@@ -48,6 +50,10 @@
       currentNo - (side === 'no' ? nShares : 0)
     )
 
+  $: canBuy = market && Date.now() < (market.date + weekSeconds) * 1000
+  $: willResolveAt = market && new Date((market.date + 3 * weekSeconds) * 1000)
+  $: willResolveTo = currentYes > currentNo ? 'yes' : 'no'
+  $: shouldHaveResolved = willResolveAt.getTime() < Date.now()
   $: currentYes = market && countShares(market, 'yes')
   $: currentNo = market && countShares(market, 'no')
   $: nSharesToBuyUntil99Percent = (side => {
@@ -94,6 +100,22 @@
     })
   }
 
+  async function complain(e) {
+    e.preventDefault()
+
+    call = await contract.prepareCall(
+      'complain',
+      5000000,
+      {id: market.id},
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call.id
+      return st
+    })
+  }
+
   function setSide(side) {
     return e => {
       e.preventDefault()
@@ -121,6 +143,45 @@
   <div class="call">
     <PayToCall invoice={call.invoice} on:cancel={cancel} />
   </div>
+{:else if !canBuy}
+  <p>
+    This market is closed for exchanges. It
+    {#if shouldHaveResolved}
+      should have resolved (and eventually will)
+    {:else}
+      will resolve
+    {/if}
+
+    to
+    <span style="display: inline-block; padding: 2px 4px" class={willResolveTo}
+      >{willResolveTo}</span
+    >
+    on
+    <span class="date">{dateFormat(willResolveAt, 'dddd, mmmm dS, yyyy')}</span
+    >.
+  </p>
+
+  <p>
+    If you think that decision is wrong you can complain below and it will be
+    manually resolved by the contract's supreme admin. Complaining has a cost,
+    but you will be reimbursed if you happen to be right in your complaint.
+  </p>
+
+  <form on:submit={complain}>
+    <div class="wrap">
+      <div class="button-wrap">
+        {#if !$account.id}
+          <div>
+            Login to your
+            <a href="https://etleneum.com/" target="_blank">Etleneum</a> account
+            to complain about this resolution.
+            <Auth />
+          </div>
+        {/if}
+        <button disabled={!$account.id}> Complain </button>
+      </div>
+    </div>
+  </form>
 {:else}
   <form on:submit={exchange}>
     <div class="wrap">
@@ -251,5 +312,10 @@
   .no {
     background-color: var(--no);
     color: black;
+  }
+
+  .date {
+    text-decoration: underline;
+    font-weight: bold;
   }
 </style>

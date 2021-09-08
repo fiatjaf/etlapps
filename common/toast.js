@@ -9,7 +9,8 @@ function toast(type, html, duration) {
     close: duration > 10000,
     gravity: 'top',
     positionLeft: false,
-    className: `toast-${type}`
+    className: `toast-${type}`,
+    escapeMarkup: false
   }).showToast()
 }
 

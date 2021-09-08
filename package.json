@@ -18,6 +18,7 @@
   "dependencies": {
     "bech32": "^2.0.0",
     "buffer": "^6.0.3",
+    "dateformat": "^4.5.1",
     "debounce": "^1.2.1",
     "etleneum": "^0.3.0",
     "flatten": "^1.0.3",

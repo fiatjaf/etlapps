@@ -2,7 +2,7 @@
 <script>
   import {onMount, setContext} from 'svelte'
   import {writable} from 'svelte/store'
-  import {Contract, loadCall} from 'etleneum'
+  import {Contract} from 'etleneum'
 
   import Index from './Index.svelte'
   import {state} from './helpers'
@@ -10,7 +10,7 @@
   import * as toast from '../../common/toast'
   import Foot from '../../components/Footer.svelte'
 
-  const CONTRACT = 'c4w1e4r9na'
+  const CONTRACT = 'c6o1c46quw'
 
   const contract = Contract(CONTRACT)
   setContext('contract', contract)
@@ -43,7 +43,7 @@
       async id => {
         loadMarkets()
 
-        let newCall = await loadCall(id)
+        let newCall = await contract.loadCall(id)
 
         if ($state.call === id) {
           for (let i = 0; i < unsetCallListeners.length; i++) {

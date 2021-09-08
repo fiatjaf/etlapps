@@ -1,7 +1,7 @@
-%/static/bundle.js: $(shell find $*/src) rollup.config.js package.json
+%/static/bundle.js: %/src/* rollup.config.js package.json
 	APPNAME=$* ./node_modules/.bin/rollup -c
 
-apps = banners chainmarket smt features lichess s4a kad predictions
+apps = banners chainmarket smt features lichess s4a kad predictions predictions2
 
 all:
 	for app in $(apps); do make $$app/static/bundle.js; done
