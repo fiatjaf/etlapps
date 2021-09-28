@@ -1,3 +1,5 @@
+/** @format */
+
 import svelte from 'rollup-plugin-svelte'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -6,19 +8,30 @@ import css from 'rollup-plugin-css-only'
 
 const production = !!process.env.PRODUCTION
 
-const bundleEntry = appName => ({
-  input: `${appName}/src/main.js`,
+export default {
+  input: 'src/main.js',
   output: {
     sourcemap: true,
     format: 'iife',
     name: 'app',
-    file: `${appName}/static/bundle.js`
+    file: 'static/bundle.js'
   },
   plugins: [
     svelte({
-      compilerOptions: {dev: !production}
+      // enable run-time checks when not in production
+      dev: !production,
+      // we'll extract any component CSS out into
+      // a separate file — better for performance
+      css: css => {
+        css.write('static/bundle.css')
+      }
     }),
 
+    // If you have external dependencies installed from
+    // npm, you'll most likely need these plugins. In
+    // some cases you'll need additional configuration —
+    // consult the documentation for details:
+    // https://github.com/rollup/rollup-plugin-commonjs
     resolve({
       browser: true,
       dedupe: importee =>
@@ -37,19 +50,4 @@ const bundleEntry = appName => ({
   watch: {
     clearScreen: false
   }
-})
-
-export default process.env.APPNAME
-  ? bundleEntry(process.env.APPNAME)
-  : [
-      'banners',
-      'chainmarket',
-      'smt',
-      'features',
-      'lichess',
-      's4a',
-      'kad',
-      'predictions',
-      'predictions2',
-      'auction'
-    ].map(bundleEntry)
+}
