@@ -186,7 +186,7 @@
 
 <div>
   {#if call}
-    <PayToCall invoice={call.invoice} on:cancel={cancel} />
+    <PayToCall call={call} on:cancel={cancel} />
   {:else}
     <h2>How it works, in short</h2>
     <ol>

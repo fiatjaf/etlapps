@@ -1,11 +1,7 @@
-
-
 <script>
   import {createEventDispatcher} from 'svelte'
   import QR from 'svelte-kjua'
-  import bech32 from 'bech32'
-
-  const dispatch = createEventDispatcher()
+  import {bech32} from 'bech32'
 
   export let color = '#333'
   export let background = 'transparent'
@@ -47,6 +43,13 @@
   }
 </script>
 
+<div class="center">
+  <a href="lightning:{lnurl}" style="background-color: {background}">
+    <QR value={lnurl.toUpperCase()} {color} />
+  </a>
+  <div class="wrap">{lnurl}</div>
+</div>
+
 <style>
   .center {
     display: flex;
@@ -65,10 +68,3 @@
     margin: 0 20%;
   }
 </style>
-
-<div class="center">
-  <a href="lightning:{lnurl}" style="background-color: {background}">
-    <QR value="{lnurl.toUpperCase()}" color="{color}" />
-  </a>
-  <div class="wrap">{lnurl}</div>
-</div>

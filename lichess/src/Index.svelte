@@ -72,7 +72,7 @@
 
 <main>
   {#if call}
-    <PayToCall background="#ffffff" invoice={call.invoice} on:cancel={cancel} />
+    <PayToCall call={call} on:cancel={cancel} />
   {:else}
     <div>
       <iframe

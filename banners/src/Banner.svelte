@@ -137,7 +137,7 @@
   <section>
     <b>Queue an ad:</b>
     {#if call}
-      <PayToCall invoice={call.invoice} on:cancel={cancel} />
+      <PayToCall call={call} on:cancel={cancel} />
     {:else}
       <form on:submit={queueAd}>
         <label>Link: <input name="link" type="url" /></label>

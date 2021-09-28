@@ -88,7 +88,7 @@
   </header>
   <div class="container grid-lg">
     {#if call}
-      <PayToCall invoice={call.invoice} on:cancel={cancel} />
+      <PayToCall call={call} on:cancel={cancel} />
     {:else}
       <h2>Open offers</h2>
       {#if offers.length}

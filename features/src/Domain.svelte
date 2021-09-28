@@ -135,11 +135,7 @@
     </section>
     <div id="create" bind:this={elementCreate}>
       {#if call}
-        <PayToCall
-          background="#ffffff"
-          invoice={call.invoice}
-          on:cancel={cancel}
-        />
+        <PayToCall background="#ffffff" {call} on:cancel={cancel} />
       {:else}
         <h2>Open a new feature request</h2>
         <form on:submit={createRequest}>

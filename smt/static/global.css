@@ -1,29 +1,20 @@
-:root {
-  --background-main: #f9f4ef;
-  --color-main: #020826;
-  --background-secondary: #eaddcf;
-  --color-secondary: #716040;
-  --links: #716040;
-  --emphasis: #8c7851;
-  --emphasis-rare: #f25042;
-}
-
-/* * {
+* {
   box-sizing: border-box;
 }
 html {
   margin: 0;
   padding: 0;
   font-family: serif;
-  font-size: 150%;
+  font-size: 100%;
   background-color: var(--background-main);
   color: var(--color-main);
-} */
-/* body {
-  width: 800px;
+  font-family: 'Manrope', sans-serif;
+}
+body {
+  width: 900px;
   max-width: 98%;
   padding: 20px;
-  margin: auto;
+  margin: 0 auto;
 }
 a {
   cursor: pointer;
@@ -38,7 +29,7 @@ em {
   color: var(--emphasis);
   font-style: normal;
 }
-input {
+input, textarea, select {
   line-height: 1.5rem;
   margin: 0 10px;
 }
@@ -53,19 +44,29 @@ button,
   cursor: pointer;
   text-decoration: none;
   padding: 8px 16px;
-  margin: 2px 12px;
-  background-color: var(--background-secondary);
-  color: var(--color-secondary);
-  border: 1px var(--background-main);
+  margin: 8px 12px;
+  background-color: var(--links);
+  color: var(--background-main);
+  border: 2px var(--background-main);
   border-style: outset;
+  font-weight: bold;
+  font-size: 1.1em;
+  opacity: 0.9;
 }
 button:hover,
 .button:hover {
+  opacity: 1;
+}
+button:active,
+.button:active,
+button.active,
+.button.active {
   border-style: inset;
+  box-shadow: inset 0 0 3rem rgba(0,0,0,.75)
 }
 a.button {
   text-decoration: none;
-} */
+}
 
 .toastify { max-width: 100%; }
 .toastify pre, .toastify em {
@@ -77,6 +78,8 @@ a.button {
 .toast-error { background: #db6e6e!important; }
 .toast-success { background: #6edb91!important; }
 
-.completion {
-  padding: 1.6rem;
+[data-wenk] {
+  font-size: 60%;
+  color: var(--links);
+  cursor: help;
 }

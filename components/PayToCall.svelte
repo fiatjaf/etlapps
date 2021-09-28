@@ -6,24 +6,11 @@
 
   const dispatch = createEventDispatcher()
 
-  export let invoice
+  export let call
   export let color = '#333'
   export let background = 'transparent'
 
-  const MULTIPLIERS = {
-    m: 100000000,
-    u: 100000,
-    n: 100,
-    p: 0.1
-  }
-
-  let hrp = invoice.split('1').slice(0, -1).join('')
-  let numbers = 0
-  try {
-    numbers = hrp.match(/\d+/)[0].length
-  } catch (err) {}
-  let multiplier = hrp[hrp.length - 1]
-  let msatoshi = Math.round(MULTIPLIERS[multiplier] * numbers)
+  let {method, msatoshi, payload} = call
   let isNegligible = msatoshi < 10
 
   function dispatchCancel(e) {
@@ -33,8 +20,6 @@
 
   async function payWithBalance(e) {
     e.preventDefault()
-
-    let {method, msatoshi, payload} = nextcall
 
     if (!method) {
       toast.warning('you must select a method to call!')
@@ -71,10 +56,10 @@
       >Why do I have to pay?</small
     >
   {/if}
-  <a href="lightning:{invoice}" style="background-color: {background}">
-    <QR value={invoice} {color} />
+  <a href="lightning:{call.invoice}" style="background-color: {background}">
+    <QR value={call.invoice} {color} />
   </a>
-  <div class="invoice">{invoice}</div>
+  <div class="invoice">{call.invoice}</div>
   <div class="button-wrapper">
     {#if $store.balance >= msatoshi}
       <button on:click={payWithBalance}>Pay with Etleneum balance</button>

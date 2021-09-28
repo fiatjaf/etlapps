@@ -164,7 +164,7 @@
     </li>
   </ul>
   {#if call}
-    <PayToCall invoice={call.invoice} on:cancel={cancel} />
+    <PayToCall call={call} on:cancel={cancel} />
   {:else if offer}
     <h1>{offer.head}</h1>
     <div id="offer">

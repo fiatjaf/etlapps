@@ -153,7 +153,7 @@
   <p style="margin: 25px 20px">Loading market {marketId}...</p>
 {:else if call}
   <div class="call">
-    <PayToCall invoice={call.invoice} on:cancel={cancel} />
+    <PayToCall call={call} on:cancel={cancel} />
   </div>
 {:else if !increasingLiquidity}
   <form on:submit={exchange}>

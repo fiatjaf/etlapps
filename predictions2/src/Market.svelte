@@ -141,7 +141,7 @@
 
 {#if call}
   <div class="call">
-    <PayToCall invoice={call.invoice} on:cancel={cancel} />
+    <PayToCall call={call} on:cancel={cancel} />
   </div>
 {:else if !canBuy}
   <p>

@@ -89,7 +89,7 @@
 <section>
   {#if call}
     <div>
-      <PayToCall invoice={call.invoice} on:cancel={cancel} />
+      <PayToCall call={call} on:cancel={cancel} />
     </div>
   {:else if $account.id}
     <h3>Add a new banner</h3>
