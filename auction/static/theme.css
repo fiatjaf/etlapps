@@ -1,0 +1,66 @@
+:root {
+  --background-main: beige;
+  --color-main: #444;
+  --background-secondary: whitesmoke;
+  --color-secondary: #222;
+  --links: #f9ab55;
+  --emphasis: #f58a07;
+  --emphasis-rare: #f9ab55;
+
+  --yes: #58c392;
+  --no: #f97e4f;
+}
+
+form {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+
+  --background: var(--background-secondary);
+  --form-text: var(--color-secondary);
+}
+
+input::placeholder {
+  color: #ded7d7;
+}
+
+label {
+  display: grid;
+  text-align: center;
+  grid-template-columns: 136px auto;
+  grid-template-rows: auto;
+  grid-template-areas:
+    'label-area input-area'
+    'explanation-area explanation-area';
+}
+label > * {
+  display: block;
+  text-align: left;
+}
+label > *:nth-child(1) {
+  grid-area: label-area;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+label > *:nth-child(2) {
+  grid-area: input-area;
+}
+label > *:nth-child(3) {
+  grid-area: explanation-area;
+}
+form > * {
+  margin: 10px 0;
+}
+div.button-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+input {
+  margin: 0;
+}
+.call {
+  margin: 20px auto;
+}
