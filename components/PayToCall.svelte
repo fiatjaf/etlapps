@@ -10,7 +10,7 @@
   export let color = '#333'
   export let background = 'transparent'
 
-  let {method, msatoshi, payload} = call
+  let {method, msatoshi, payload, invoice} = call
   let isNegligible = msatoshi < 10
 
   function dispatchCancel(e) {
@@ -56,10 +56,10 @@
       >Why do I have to pay?</small
     >
   {/if}
-  <a href="lightning:{call.invoice}" style="background-color: {background}">
-    <QR value={call.invoice} {color} />
+  <a href="lightning:{invoice}" style="background-color: {background}">
+    <QR value={invoice} {color} />
   </a>
-  <div class="invoice">{call.invoice}</div>
+  <div class="invoice">{invoice}</div>
   <div class="button-wrapper">
     {#if $store.balance >= msatoshi}
       <button on:click={payWithBalance}>Pay with Etleneum balance</button>
