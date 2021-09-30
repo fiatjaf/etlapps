@@ -11,7 +11,7 @@
 
   const contract = getContext('contract')
 
-  var new_bid = 0
+  var new_bid = parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000)
 
   var call
   const unsetCall = getContext('unset-call')
@@ -63,6 +63,7 @@
           <div>New bid</div>
           <input
             type="number"
+            min="{parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000) }"
             style="display: block; margin: auto;"
             bind:value={new_bid}
           />
