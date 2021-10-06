@@ -95,7 +95,7 @@
         }
       },
       (id, errMessage) => {
-        if ($state.call === id) {
+        if ($state.call.id === id) {
           toast.warning(`Your call failed: ${errMessage}`)
         } else {
           toast.warning(`A call from someone else failed: ${errMessage}`)

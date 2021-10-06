@@ -45,7 +45,7 @@
 
         let newCall = await contract.loadCall(id)
 
-        if ($state.call === id) {
+        if ($state.call.id === id) {
           for (let i = 0; i < unsetCallListeners.length; i++) {
             unsetCallListeners[i]()
           }
@@ -80,7 +80,7 @@
         }
       },
       (id, errMessage) => {
-        if ($state.call === id) {
+        if ($state.call.id === id) {
           toast.warning(`Your call failed: ${errMessage}`)
         } else {
           toast.warning(`A call from someone else failed: ${errMessage}`)

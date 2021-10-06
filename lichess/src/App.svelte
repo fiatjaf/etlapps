@@ -24,7 +24,7 @@
     async id => {
       let newCall = await contract.loadCall(id)
 
-      if ($state.call === id) {
+      if ($state.call.id === id) {
         let gamedescriptor = btoa(
           JSON.stringify({c: $state.challenge, g: $state.game})
         )
@@ -66,7 +66,7 @@
       }
     },
     (id, errMessage) => {
-      if ($state.call === id) {
+      if ($state.call.id === id) {
         toast.warning(`Your call failed: ${errMessage}`)
       } else {
         toast.warning(`A call from someone else failed: ${errMessage}`)
