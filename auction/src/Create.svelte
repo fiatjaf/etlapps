@@ -125,7 +125,7 @@
           <Auth />
         </div>
       {/if}
-      <button> Create </button>
+      <button disabled={!$account.id}> Create </button>
     </div>
   </form>
 {/if}

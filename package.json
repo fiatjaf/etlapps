@@ -23,6 +23,7 @@
     "etleneum": "^0.3.0",
     "flatten": "^1.0.3",
     "promise-window": "^1.2.1",
+    "svelte-countdown": "^1.0.0",
     "svelte-kjua": "^1.2.0",
     "svelte-select": "^4.2.6",
     "toastify-js": "^1.11.0",

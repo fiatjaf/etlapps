@@ -3,6 +3,7 @@
   import {onMount, setContext} from 'svelte'
   import {writable} from 'svelte/store'
   import {Contract} from 'etleneum'
+  import account from '../../components/etleneumAccountStore'
 
   import Index from './Index.svelte'
   import {state} from './helpers'
@@ -45,7 +46,7 @@
 
         let newCall = await contract.loadCall(id)
 
-        if ($state.call === id) {
+        if ($state.call.id === id) {
           for (let i = 0; i < unsetCallListeners.length; i++) {
             unsetCallListeners[i]()
           }
@@ -55,13 +56,23 @@
               // we've created a auction
               toast.success(`Your auction was created!`)
               break
+            case 'deposit':
+              // we've created a auction
+              toast.success(`Your account balance was deposited!`)
+              $account.refresh()
+              $account.subscribe(topup_log)
+              break
             case 'place_bid':
               // we've placed a bid
               toast.success(`Bid placed!`)
+              $account.refresh()
+              $account.subscribe(topup_log)
               break
             case 'finish_auction':
               // we've finished auction
               toast.success('Auction finished!')
+              $account.refresh()
+              $account.subscribe(topup_log)
           }
         } else {
           switch (newCall.method) {
@@ -72,6 +83,10 @@
             case 'place_bid':
               // someone else has placed a bid
               toast.success(`Someone placed bid!`)
+              break
+            case 'deposit':
+              // someone else has placed a bid
+              toast.success(`Someone made deposit!`)
               break
             case 'finish_auction':
               // someone else finished auction
@@ -87,20 +102,24 @@
         }
       }
     )
+
+    async function topup_log() {
+      console.log('Balance is updated');
+    }
+
   })
 </script>
 
 <main>
   <header>
     <h1>Simple Auction</h1>
-    <div>
-      <p>Place a bid on an item and pay it.</p>
-      <p>
-        As soon as someone else outbids you your funds will be returned to your <a
-          href="https://etleneum.com/"
-          target="_blank">Etleneum</a
-        > account.
-      </p>
+    <div class="right_header_part">
+      {#if $account.id}
+      <div>
+        Your <a href="https://etleneum.com/#/account">Etleneum account</a> balance: {$account.balance / 1000} sat 
+      </div>
+      <hr>
+      {/if}
       <p>
         This contract cannot ensure or coordinate the delivery of goods, that
         must be arranged off-contract. Make sure to know what and from whom
@@ -123,9 +142,10 @@
     margin-right: 20px;
     min-width: 40%;
   }
-
-  p {
+  .right_header_part > * {
+    width:100%;
+  }
+  .right_header_part p{
     font-size: 14px;
-    margin: 0;
   }
 </style>

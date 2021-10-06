@@ -3,6 +3,7 @@
   import {getContext} from 'svelte'
 
   import Create from './Create.svelte'
+  import Topup from './Topup.svelte'
   import Auction from './Auction.svelte'
   import AuctionSummary from './AuctionSummary.svelte'
 
@@ -54,7 +55,6 @@
   }
 </script>
 
-<main>
   {#each auctionList as auction (auction.id)}
     <details
       id={`auction-${auction.id}`}
@@ -75,11 +75,15 @@
     <summary> Create a new auction </summary>
     <Create />
   </details>
+  <details>
+    <summary> Top-up account balance </summary>
+    <Topup />
+  </details>
+
 
   {#if $account.id}
     <center><Auth /></center>
   {/if}
-</main>
 
 <style>
   details,
@@ -97,4 +101,9 @@
     justify-content: space-between;
     align-items: start;
   }
+  @media (max-width: 992px) {
+    details.auction summary {
+      flex-flow: column;
+    }
+  } 
 </style>

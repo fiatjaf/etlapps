@@ -3,9 +3,14 @@
   --color-main: white;
   --background-secondary: white;
   --color-secondary: black;
-  --links: #5b446a;
-  --emphasis: #906387;
-  --emphasis-rare: #7dd87d;
+  --links: #1c4433;
+  --emphasis: #fff;
+  --emphasis-rare: #fff;
+  --typo-size-2:1.8rem;
+}
+
+body{
+  width: 1100px!important; /* consider moving this width to global.css. */
 }
 
 footer {
@@ -63,4 +68,14 @@ input {
 }
 .call {
   margin: 20px auto;
+}
+.button.disabled, button:disabled{
+  display: none;
+}
+.widget em{
+  color: --emphasis;
+}
+.button-wrap button{
+  color: --emphasis;
+  border: none;
 }
