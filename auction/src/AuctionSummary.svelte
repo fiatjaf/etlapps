@@ -11,7 +11,7 @@
 
 <div class="auction_item">
   <h2>{auctionTitle}</h2>
-    <Countdown from="{dateFormat(eventDate, 'mmmm d, yyyy h:MM:ss TT Z')}" format="mmmm d, yyyy h:MM:ss" zone="Europe/Athens" let:remaining>
+    <Countdown from="{dateFormat(eventDate, 'mmmm d, yyyy h:MM:ss TT Z')}" dateFormat="mmmm d, yyyy h:MM:ss TT Z"  let:remaining>
     <div class="whatever">
         Ends in: 
         {#if remaining.done === false}
@@ -29,7 +29,7 @@
         <span>{remaining.minutes} minutes</span>
         <span>{remaining.seconds} seconds</span>
         {:else}
-        <h2>Auction finished {dateFormat(eventDate, 'mmmm d, yyyy h:MM:ss TT Z')}!</h2>
+        <h5>Auction finished {dateFormat(eventDate, 'mmmm d, yyyy h:MM:ss TT Z')}!</h5>
         {/if}
     </div>
 </Countdown>

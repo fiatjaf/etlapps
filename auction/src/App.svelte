@@ -13,6 +13,9 @@
 
   const CONTRACT = 'c2w3fm9zhaz'
 
+  const EventSource = window.EventSource
+  const ETLENEUM = window.etleneum || 'https://etleneum.com'
+
   const contract = Contract(CONTRACT)
   setContext('contract', contract)
 
@@ -20,6 +23,7 @@
   setContext('auctions', auctionsStore)
   onMount(loadAuctions)
 
+  var es
   var unsetCallListeners = []
   setContext('unset-call', callback => {
     unsetCallListeners.push(callback)
@@ -60,19 +64,18 @@
               // we've created a auction
               toast.success(`Your account balance was deposited!`)
               $account.refresh()
-              $account.subscribe(topup_log)
+              balanceUpdate()
               break
             case 'place_bid':
               // we've placed a bid
               toast.success(`Bid placed!`)
               $account.refresh()
-              $account.subscribe(topup_log)
+              balanceUpdate()
               break
             case 'finish_auction':
-              // we've finished auction
               toast.success('Auction finished!')
               $account.refresh()
-              $account.subscribe(topup_log)
+              balanceUpdate()
           }
         } else {
           switch (newCall.method) {
@@ -83,6 +86,9 @@
             case 'place_bid':
               // someone else has placed a bid
               toast.success(`Someone placed bid!`)
+              // when someone outbid our bid - this may cause balance
+              $account.refresh()
+              balanceUpdate()
               break
             case 'deposit':
               // someone else has placed a bid
@@ -95,7 +101,7 @@
         }
       },
       (id, errMessage) => {
-        if ($state.call.id === id) {
+        if ($state.call === id) {
           toast.warning(`Your call failed: ${errMessage}`)
         } else {
           toast.warning(`A call from someone else failed: ${errMessage}`)
@@ -103,8 +109,19 @@
       }
     )
 
-    async function topup_log() {
-      console.log('Balance is updated');
+    function balanceUpdate(){
+      es = new EventSource(
+        `${ETLENEUM}/~~~/session?src=etleneum-client&session=${$account.session}`
+      )  
+      es.addEventListener('auth', e => {
+        let data = JSON.parse(e.data)
+        account.id = data.account
+        account.balance = data.balance
+
+        if (es) {
+          es.close()
+        }
+      })
     }
 
   })
