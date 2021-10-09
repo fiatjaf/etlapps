@@ -9,7 +9,7 @@
 
   const SEEDAUTH = window.SEEDAUTH || 'https://seed-auth.etleneum.com'
 
-  export let qrsize = 300
+  export let qrsize = (window.matchMedia("(max-width: 992px)").matches ? 200 : 300 )
   export let color = '#333'
   export let background = 'transparent'
   export let fluid = false
@@ -19,6 +19,7 @@
 
   afterUpdate(() => {
     if(!fluid) return
+
     const img = document.getElementsByTagName('img')
     if(img[0]){
       img[0].style.width = '100%'
@@ -194,10 +195,6 @@
     text-align: center;
     display: block;
   }
-  /* .qr > div > img {
-    width: 100% !important;
-    height: auto !important;
-  } */
   p {
     text-align: center;
     word-wrap: break-word;
