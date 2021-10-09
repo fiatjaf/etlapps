@@ -138,7 +138,7 @@
       <hr>
       {/if}
       <p>
-        This contract cannot ensure or coordinate the delivery of goods, that
+        This contract cannot ensure or coordinate the delivery of goods that
         must be arranged off-contract. Make sure to know what and from whom
         you're buying before bidding.
       </p>
@@ -153,6 +153,12 @@
     display: flex;
     align-items: center;
     color: var(--color-main);
+  }
+
+  @media (max-width: 992px) {
+    header{
+      flex-flow: column;
+    }
   }
 
   h1 {
