@@ -123,13 +123,24 @@
         }
       })
     }
-
   })
+
+  function resetToggled(){
+      setTimeout(() => {
+        let auctionDetails = document.querySelectorAll('details')
+        for (let i = 0; i < auctionDetails.length; i++) {
+          if(auctionDetails[i].open){ auctionDetails[i].open = false }
+          auctionDetails[i].style.display = 'block'
+          create_auction_wrapper.style.display = 'block'
+        }
+        location.hash = ''
+      }, 10)
+  }
 </script>
 
 <main>
   <header>
-    <h1>Simple Auction</h1>
+    <h1 on:click="{resetToggled}">Simple Auction</h1>
     <div class="right_header_part">
       {#if $account.id}
       <div>
@@ -162,6 +173,7 @@
   }
 
   h1 {
+    cursor: pointer;
     margin-right: 20px;
     min-width: 40%;
   }
