@@ -78,7 +78,7 @@
         placeholder="As seen on https://art.site/id"
       />
       <small
-        >Include information about what what the auction winner gets, including
+        >Include information about what what the auction winner gets including
         links to some external website page or image here.</small
       >
     </label>
@@ -96,7 +96,7 @@
       >
     </label>
     <label>
-      <div>Minial step of bid (sats)</div>
+      <div>Minimal step of bid (sats)</div>
       <input
         type="number"
         min="0"
