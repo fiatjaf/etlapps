@@ -6,15 +6,12 @@
   import account from '../../components/etleneumAccountStore'
 
   import Index from './Index.svelte'
-  import {state} from './helpers'
+  import {state, resetToggled} from './helpers'
 
   import * as toast from '../../common/toast'
   import Foot from '../../components/Footer.svelte'
 
   const CONTRACT = 'c2w3fm9zhaz'
-
-  const EventSource = window.EventSource
-  const ETLENEUM = window.etleneum || 'https://etleneum.com'
 
   const contract = Contract(CONTRACT)
   setContext('contract', contract)
@@ -23,7 +20,10 @@
   setContext('auctions', auctionsStore)
   onMount(loadAuctions)
 
+  const EventSource = window.EventSource
+  const ETLENEUM = window.etleneum || 'https://etleneum.com'
   var es
+
   var unsetCallListeners = []
   setContext('unset-call', callback => {
     unsetCallListeners.push(callback)
@@ -124,18 +124,6 @@
       })
     }
   })
-
-  function resetToggled(){
-      setTimeout(() => {
-        let auctionDetails = document.querySelectorAll('details')
-        for (let i = 0; i < auctionDetails.length; i++) {
-          if(auctionDetails[i].open){ auctionDetails[i].open = false }
-          auctionDetails[i].style.display = 'block'
-          create_auction_wrapper.style.display = 'block'
-        }
-        location.hash = ''
-      }, 10)
-  }
 </script>
 
 <main>
