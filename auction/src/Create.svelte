@@ -119,11 +119,10 @@
     </label>
     <div class="button-wrap">
       {#if !$account.id}
-        <div>
-          Login to your
-          <a href="https://etleneum.com/" target="_blank">etleneum.com</a>
-          account to create this auction.
+        <div class="text-center">
+          Login to create this auction.
           <Auth />
+          You don't need to register for first log-in just enter any login and password
         </div>
       {/if}
       <button disabled={!$account.id}> Create </button>

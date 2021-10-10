@@ -15,15 +15,6 @@
     <div class="whatever">
         Ends in: 
         {#if remaining.done === false}
-        {#if remaining.years != 0}
-          <span>{remaining.years} years</span>
-        {/if}
-        {#if remaining.months != 0}
-        <span>{remaining.months} months</span>
-        {/if}
-        {#if remaining.weeks != 0}
-        <span>{remaining.weeks} weeks</span>
-        {/if}
         <span>{remaining.days} days</span>
         <span>{remaining.hours} hours</span>
         <span>{remaining.minutes} minutes</span>

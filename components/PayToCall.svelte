@@ -6,6 +6,7 @@
 
   const dispatch = createEventDispatcher()
 
+  export let qrsize
   export let call
   export let color = '#333'
   export let background = 'transparent'
@@ -57,7 +58,7 @@
     >
   {/if}
   <a href="lightning:{invoice}" style="background-color: {background}">
-    <QR value={invoice} {color} />
+    <QR value={invoice} {color} size="{qrsize}"/>
   </a>
   <div class="invoice">{invoice}</div>
   <div class="button-wrapper">

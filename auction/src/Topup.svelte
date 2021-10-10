@@ -17,7 +17,7 @@
     })
   })
 
-  var top_up_amount = 0;
+  var top_up_amount = 0
 
   function cancel() {
     call = null
@@ -56,14 +56,6 @@
       />
     </label>
     <div class="button-wrap">
-      {#if !$account.id}
-        <div>
-          Login to your
-          <a href="https://etleneum.com/" target="_blank">etleneum.com</a>
-          account to create this auction.
-          <Auth />
-        </div>
-      {/if}
       <button disabled={!$account.id}> Top-up </button>
     </div>
   </form>

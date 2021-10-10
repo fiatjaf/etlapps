@@ -119,11 +119,12 @@
     <summary> Create a new auction </summary>
     <Create />
   </details>
+  {#if $account.id}
   <details id="topup_account_wrapper">
     <summary> Top-up account balance </summary>
     <Topup />
   </details>
-
+  {/if}
 
   {#if $account.id}
     <center><Auth /></center>
