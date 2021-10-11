@@ -13,6 +13,7 @@
   <h2>{auctionTitle}</h2>
     <Countdown from="{dateFormat(eventDate, 'mmmm d, yyyy h:MM:ss TT Z')}" dateFormat="mmmm d, yyyy h:MM:ss TT Z"  let:remaining>
     <div class="whatever">
+        Host: {truncate(auction.creator_id, 4)} <br>
         Ends in: 
         {#if remaining.done === false}
         <span>{remaining.days} days</span>
