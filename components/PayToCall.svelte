@@ -1,7 +1,6 @@
 <script>
   import {createEventDispatcher} from 'svelte'
   import QR from 'svelte-kjua'
-
   import store from './etleneumAccountStore'
 
   const dispatch = createEventDispatcher()
@@ -29,7 +28,7 @@
 
     let qs = `?session=${$store.session}&use-balance=true`
 
-    let r = await fetch('/~/contract/' + params.ctid + '/call' + qs, {
+    let r = await fetch(window.etleneum + '/~/contract/' + call.contract_id + '/call' + qs, {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -38,14 +37,16 @@
         payload
       })
     })
-    let resp = await r.json()
 
-    if (!resp.ok) {
-      toast.warning(resp.error)
+    //let resp = await r.json()
+
+    if (!r.ok) {
+      toast.warning(r.error)
       return
     }
 
-    resetNextCall()
+    // ReferenceError: resetNextCall is not defined. there is no such function in repository. it was probably deprecated
+    //resetNextCall()
   }
 </script>
 
