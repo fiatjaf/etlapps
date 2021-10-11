@@ -89,6 +89,9 @@ input {
 aside .invoice{
   margin: 0 !important;
 }
+aside .button-wrapper{
+    flex-flow: column;
+}
 
 @media (max-width: 992px) {
   label{

@@ -53,6 +53,7 @@
         min="100"
         bind:value={top_up_amount}
         placeholder="1000"
+        required
       />
     </label>
     <div class="button-wrap">

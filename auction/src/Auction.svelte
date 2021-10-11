@@ -17,7 +17,8 @@
   const unsetCall = getContext('unset-call')
   onMount(() => {
     return unsetCall(() => {
-      call = null
+      call = null,
+      new_bid = parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000)
     })
   })
 
@@ -79,6 +80,7 @@
                     min="{parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000) }"
                     style="display: block; margin: auto;width:100%;"
                     bind:value={new_bid}
+                    required
                   />
                 </label>
             </div>
@@ -141,6 +143,7 @@
   .auction_details aside{
     width: 25%;
   }
+
 
   @media (max-width: 992px) {
     .auction_details,.auction_item{

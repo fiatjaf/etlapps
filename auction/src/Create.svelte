@@ -69,7 +69,7 @@
   <form on:submit={createAuction}>
     <label>
       <div>Item Name</div>
-      <input bind:value={create.title} placeholder="Bitcoin Art" />
+      <input bind:value={create.title} placeholder="Bitcoin Art" required/>
       <small>Name of the thing being auctioned.</small>
     </label>
     <label>
@@ -90,6 +90,7 @@
         min="1"
         bind:value={create.auction_duration_days}
         placeholder="7"
+        required
       />
       <small
         >How many days starting from now auction will be active. You cannot
@@ -103,6 +104,7 @@
         min="0"
         bind:value={create.min_step}
         placeholder="1000"
+        required
       />
       <small>Bidder can't make bid less then previous bid + minimal step.</small
       >
@@ -114,6 +116,7 @@
         min="0"
         bind:value={create.starting_bid}
         placeholder="10000"
+        required
       />
       <small>Minimum amount of satoshis required to place first bid.</small>
     </label>
