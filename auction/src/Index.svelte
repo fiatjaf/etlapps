@@ -16,7 +16,6 @@
   auctionsStore.subscribe(auctions => {
     auctionList = Object.keys(auctions)
       .map(id => ({id, ...auctions[id]}))
-      .filter(({end_datetime}) => (end_datetime + 86400) * 1000 > Date.now())
       .sort((a, b) => a.end_datetime - b.end_datetime)
   })
 

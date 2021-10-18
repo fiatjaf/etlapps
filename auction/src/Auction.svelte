@@ -5,13 +5,26 @@
   import Auth from '../../components/Auth.svelte'
   import account from '../../components/etleneumAccountStore'
 
+  import * as toast from '../../common/toast'
+
   import {state, splitAuctionItem} from './helpers'
 
   export let auction
 
   const contract = getContext('contract')
+  const alias_contract = getContext('alias_contract')
+
+  const aliasesStore = getContext('aliases')
+  var userAliases = []
+
+  if ( $account.id == auction.top_bider_id ){
+    aliasesStore.subscribe(aliases => {
+      userAliases = aliases[$account.id]
+    })
+  }
 
   var new_bid = parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000)
+  var winner_contact
 
   var call
   const unsetCall = getContext('unset-call')
@@ -46,12 +59,58 @@
       return st
     })
   }
+
+
+  async function finish_auction(e) {
+    e.preventDefault()
+
+    call = await contract.prepareCall(
+      'finish_auction',
+      0,
+      {auction_id: auction.id},
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call
+      return st
+    })
+  }
+
+  async function set_alias(e) {
+    call = await alias_contract.prepareCall(
+      'add',
+      0,
+      {alias: winner_contact},
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call
+      return st
+    })
+  }
+
+  async function delete_alias(e) {
+    call = await alias_contract.prepareCall(
+      'delete',
+      0,
+      {alias: winner_contact},
+      $account.session
+    )
+
+    state.update(st => {
+      st.call = call
+      return st
+    })
+  }
+
 </script>
 <div class="auction_details">
   <div class="auction_item">
     {#if auctionImages.length > 0}
       <div class="auction_images">
-        {#each auctionImages as image, i}
+        {#each auctionImages || [] as image, i}
           <a class="text-center" href="{image}" target="_blank" rel="nofollow noopener"><img src="{image}" alt="{auctionTitle} {i}"></a>
         {/each}
       </div>
@@ -61,6 +120,42 @@
       {#if !canBid}
         <p style="word-break: break-word;">
           This auction is closed. The winner is {auction.top_bider_id}.
+
+          {#if $account.id == auction.creator_id}
+            {#if auction.state}
+            <form on:submit={finish_auction}>
+              <div class="button-wrap">
+                <button> Finish Auction </button>
+              </div>
+            </form>  
+            {:else}
+              <p>You already finished this auction.</p>
+            {/if}
+          {/if}
+
+          {#if $account.id == auction.top_bider_id}
+              <div class="wrap text-center">
+                  <p>Please leave your contact data email/telegram. <br>Note: this data will be open for everyone</p> 
+                  <label style="display: block;">
+                    <input
+                      type="text"
+                      style="display: block; margin: auto;width:auto;"
+                      bind:value={winner_contact}
+                      required
+                    />
+                  </label>
+                  <button on:click={set_alias}> Set Alias </button>  
+                  <button on:click={delete_alias}> Delete Alias </button>
+
+                  <h5>List of your aliases</h5>
+                  {#each userAliases || [] as alias}
+                    <p>{alias}</p>
+                    {:else}
+                    <p>You still haven't any aliases</p>
+                  {/each}
+              </div>
+          {/if}
+
         </p>
       {/if}
     </div>
@@ -85,7 +180,7 @@
                 </label>
             </div>
             <div class="button-wrap">
-              <button disabled={!$account.id}> Place bid </button>
+              <button> Place bid </button>
             </div>
           </form>    
         {/if}
