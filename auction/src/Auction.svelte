@@ -229,7 +229,7 @@
   }
   .auction_images img{
     max-height: 250px;
-    margin: 5px;
+    padding: 0 2px;
   }
   .auction_details{
     display: flex;
