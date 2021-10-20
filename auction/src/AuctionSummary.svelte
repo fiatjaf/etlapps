@@ -44,12 +44,12 @@
     display: flex;
     width: 25%;
     flex-wrap: wrap;
-    background-color: var(--background-main);
+    background-color: var(--emphasis-rare);
   }
   aside > * {
     width:100%;
     padding: 5px 10px;
-    color:var(--color-main);
+    color:var(--background-secondary);
   }
   @media (max-width: 992px) {
     .auction_item {
