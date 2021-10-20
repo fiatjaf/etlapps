@@ -16,7 +16,7 @@
   auctionsStore.subscribe(auctions => {
     auctionList = Object.keys(auctions)
       .map(id => ({id, ...auctions[id]}))
-      .sort((a, b) => a.end_datetime - b.end_datetime)
+      .sort((a, b) => a.end_datetime - b.end_datetime && b.state > a.state )
   })
 
   function auctionAppeared(element, id) {
