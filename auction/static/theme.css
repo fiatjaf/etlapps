@@ -1,12 +1,12 @@
 :root {
-  --background-main: #4c9173;
-  --color-main: white;
-  --background-secondary: white;
+  --background-main: #eff0f3;
+  --color-main: #000;
+  --background-secondary: #fff;
   --color-secondary: black;
   --links: #1c4433;
-  --emphasis: #fff;
-  --emphasis-rare: #fff;
-  --typo-size-2:1.8rem;
+  --emphasis: #000;
+  --emphasis-rare: #4c9173;
+  --typo-size-2: 1.8rem;
 }
 
 body{
@@ -14,7 +14,7 @@ body{
 }
 
 footer {
-  --text-muted: white;
+  --text-muted: --black;
 }
 
 form {
