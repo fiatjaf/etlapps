@@ -17,11 +17,13 @@
   const aliasesStore = getContext('aliases')
   var userAliases = []
 
-  if ( $account.id == auction.top_bider_id ){
-    aliasesStore.subscribe(aliases => {
-      userAliases = aliases[$account.id]
-    })
-  }
+  setTimeout(() => {
+    if ( $account.id == auction.top_bider_id ){
+      aliasesStore.subscribe(aliases => {
+        userAliases = aliases[$account.id]
+      })
+    }
+  }, 3000);
 
   var new_bid = parseInt(auction.current_top_bid / 1000) + parseInt(auction.min_step / 1000)
   var winner_contact
@@ -223,13 +225,13 @@
     flex-basis: 33%;
     flex-flow: row;
     flex-wrap: wrap;
+    gap: 5px;
   }
   .auction_images a{
-    flex: 1 0 50%;
+    flex: 1 0 calc(50% - 5px);
   }
   .auction_images img{
     max-height: 250px;
-    margin: 5px;
   }
   .auction_details{
     display: flex;
