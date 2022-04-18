@@ -186,7 +186,7 @@
 
 <div>
   {#if call}
-    <PayToCall call={call} on:cancel={cancel} />
+    <PayToCall {call} on:cancel={cancel} />
   {:else}
     <h2>How it works, in short</h2>
     <ol>
@@ -415,9 +415,14 @@
     <p>
       Wallets that support sending to multiple addresses in the same
       transaction:
-      <a href="https://electrum.org" target="_blank">Electrum</a>,
-      <a href="https://github.com/LightningNetwork/lnd" target="_blank">lnd</a>,
+      <a href="https://sbw.app/" target="_blank">SimpleBitcoinWallet</a>,
+      <a href="https://www.sparrowwallet.com" target="_blank">Sparrow</a>,
       <a href="https://bluewallet.io" target="_blank">BlueWallet</a>,
+      <a href="https://electrum.org" target="_blank">Electrum</a>,
+      <a href="https://docs.specter.solutions/desktop/" target="_blank"
+        >Specter</a
+      >,
+      <a href="https://github.com/LightningNetwork/lnd" target="_blank">lnd</a>,
       <a href="https://github.com/ElementsProject/lightning/" target="_blank"
         >c-lightning</a
       >, <a href="https://bitcoincore.org/" target="_blank">Bitcoin Core</a>,
