@@ -1,0 +1,10 @@
+export const HomeRoute = '/';
+export const CreateAuctionRoute = '/create-auction';
+export const CreateLotteryRoute = '/create-lottery';
+export const SignInRoute = '/signin';
+export const AuctionParentRoute = '/auction';
+export const LotteryParentRoute = '/lottery';
+export const HostParentRoute = '/host';
+export const UserParentRoute = '/user';
+export const DashboardRoute = '/dashboard';
+export const EtleneumAccountERoute = 'https://etleneum.com/#/account';

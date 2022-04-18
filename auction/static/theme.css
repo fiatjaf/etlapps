@@ -7,18 +7,38 @@
   --emphasis: #000;
   --emphasis-rare: #4c9173;
   --typo-size-2: 1.8rem;
+  --warning-red: #b36464;
 }
 
 body{
   width: 1100px!important; /* consider moving this width to global.css. */
 }
 
-footer {
-  --text-muted: --black;
+h1{
+  font-size: 32px;
+}
+
+h2{
+  font-size: 28px;
+}
+
+h3{
+  font-size: 24px;
+}
+
+h4{
+  font-size: 20px;
+}
+
+h5{
+  font-size: 16px;
+}
+
+p{
+  margin: 0;
 }
 
 form {
-  background-color: rgba(255, 255, 255, 0.1);
   padding: 20px;
 
   --background: whitesmoke;
@@ -73,6 +93,9 @@ input {
 .call {
   margin: 20px auto;
 }
+.call .invoice{
+  margin: 0!important;
+}
 .button.disabled, button:disabled{
   display: none;
 }
@@ -85,6 +108,9 @@ input {
 }
 .text-center{
   text-align: center;
+}
+.fullwidth{
+  width: 100%;
 }
 aside .invoice{
   margin: 0 !important;

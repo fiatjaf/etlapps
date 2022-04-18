@@ -2,33 +2,26 @@ import {writable} from 'svelte/store'
 
 export const state = writable({})
 
-export function truncate(str, n) {
+export function truncate(str = '', n) {
   return str.length > n ? str.substr(0, n) + '...' + str.substr(-n) : str
 }
 
 export function splitAuctionItem(auction_item) {
-  let [title, details = ''] = auction_item.split('\n---\n')
+  let clear_auction_item = auction_item.toString().replace( /(<([^>]+)>)/ig, '')
+  let [title, details = ''] = clear_auction_item.split('\n---\n')
   let images = pullImagesUrls(details)
   images.forEach(function(image){
     details = details.replace(image,'')
+  })
+  let links = parseUrls(details)
+  links.forEach(function(link){
+    details = details.replace(link,`<a href="${link}" target="_blank" rel="nofollow noopener">${link}</a>`)
   })
   return {title, details, images}
 }
 
 export function joinAuctionItem(title, details) {
   return [title, details].join('\n---\n')
-}
-
-export function resetToggled(){
-    setTimeout(() => {
-      let auctionDetails = document.querySelectorAll('details')
-      for (let i = 0; i < auctionDetails.length; i++) {
-        if(auctionDetails[i].open){ auctionDetails[i].open = false }
-        auctionDetails[i].style.display = 'block'
-        create_auction_wrapper.style.display = 'block'
-      }
-      location.hash = ''
-    }, 10)
 }
 
 function pullImagesUrls(string) {
@@ -44,4 +37,20 @@ function pullImagesUrls(string) {
       });
   }
   return images_array
+}
+
+function parseUrls(string){
+  const link_regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/g
+  let m
+  let links_array = []
+  while ((m = link_regex.exec(string)) !== null) {
+      if (m.index === link_regex.lastIndex) {
+          link_regex.lastIndex++;
+      }
+      links_array.push(m[0])
+      /* m.forEach((match, groupIndex) => {
+          links_array.push(match)
+      });*/
+  }
+  return links_array
 }
